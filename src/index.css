@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color--dark-content: 220deg, 45%, 90%;
+    --color--dark-result: 220deg, 45%, 90%;
+    --color--dark-background: 223deg, 44%, 21%;
+    --color--dark-primary: 226deg, 33%, 15%;
+    --color--dark-secondary: 224deg, 44%, 5%;
+    --color--dark-accent-1: 43deg, 59%, 48%;
+    --color--dark-accent-2: 43deg, 66%, 38%;
+
+    --color--light-content: 219deg, 45%, 10%;
+    --color--light-result: 219deg, 45%, 10%;
+    --color--light-background: 223deg, 44%, 79%;
+    --color--light-primary: 228deg, 32%, 85%;
+    --color--light-secondary: 39deg, 40%, 83%;
+    --color--light-accent-1: 223deg, 96%, 41%;
+    --color--light-accent-2: 223deg, 100%, 30%;
+
+    --color-danger-1: 6deg, 100%, 33%;
+    --color-danger-2: 5deg, 100%, 37%;
+
+    /* ... */
+  }
+  
+}
+
+
+body{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Outfit', sans-serif;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #191F32;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #c39a32;
+  border-radius: 20px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #947525;
+}

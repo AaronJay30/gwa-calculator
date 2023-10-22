@@ -130,7 +130,7 @@ function App() {
 					isDark ? "text-dark-content" : "text-light-content"
 				}`}>
 				<a
-					href="https://www.facebook.com/gabato.aaron30"
+					href="https://aaronjay30.github.io/aaronjay_portfolio/"
 					target="_blank">
 					© Aaron Jay Gabato. Buy me a Coffee! ☕
 				</a>

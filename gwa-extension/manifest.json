@@ -1,0 +1,15 @@
+{
+    "manifest_version": 3,
+    "name": "GCalc",
+    "version": "1.0",
+    "description": "Quickly calculate your GWA.",
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": "calculator.svg"
+    },
+    "icons": {
+        "16": "calculator.svg",
+        "48": "calculator.svg",
+        "128": "calculator.svg"
+    }
+}

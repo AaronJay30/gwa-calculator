@@ -40,23 +40,41 @@ body{
   overflow-x: hidden;
 }
 
-/* width */
+/* Default scrollbar — thinner */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
+  height: 6px;
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #191F32;
+  background: transparent;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #c39a32;
+  background: rgba(195, 154, 50, 0.4);
   border-radius: 20px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #947525;
+  background: rgba(195, 154, 50, 0.7);
+}
+
+/* Firefox — uses CSS scrollbar properties */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(195, 154, 50, 0.4) transparent;
+}
+
+/* Inside the chat modal: hide scrollbar entirely on mobile for a cleaner look.
+   (Still scrollable — only the visual bar is hidden.) */
+@media (max-width: 639px) {
+  .chat-scroll {
+    scrollbar-width: none;
+  }
+  .chat-scroll::-webkit-scrollbar {
+    display: none;
+  }
 }

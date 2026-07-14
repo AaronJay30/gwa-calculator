@@ -2,13 +2,24 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import ThemeSwitch from "./components/ThemeSwitch";
 import Input from "./components/Input";
+import FloatingChatButton from "./components/FloatingChatButton";
+import AdminPage from "./components/AdminPage";
 import { GWA } from "./model";
+import { recordVisit } from "./firebase/visitorService";
+
+// Konami code: ↑↑↓↓←→←→BA — opens the admin page
+const KONAMI_CODE = [
+  "ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown",
+  "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight",
+  "b", "a",
+];
 
 function App() {
 	const [result, setResult] = useState(0);
 	const [academic, setAcademic] = useState("");
 	const [showDelete, setShowDelete] = useState(false);
 	const [isDark, setIsDark] = useState(true);
+	const [showAdmin, setShowAdmin] = useState(false);
 
 	const [inputList, setInputList] = useState<GWA[]>([
 		{ id: 0, grades: 0.0, units: 0 },
@@ -57,6 +68,32 @@ function App() {
 			setAcademic("");
 		}
 	}, [inputList, inputList.length]);
+
+	// Record a visit once on mount
+	useEffect(() => {
+		recordVisit().catch((err) => {
+			console.error("Failed to record visit:", err);
+		});
+	}, []);
+
+	// Konami code listener — opens admin page
+	useEffect(() => {
+		let position = 0;
+		const handler = (e: KeyboardEvent) => {
+			const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+			if (key === KONAMI_CODE[position]) {
+				position++;
+				if (position === KONAMI_CODE.length) {
+					position = 0;
+					setShowAdmin(true);
+				}
+			} else {
+				position = key === KONAMI_CODE[0] ? 1 : 0;
+			}
+		};
+		window.addEventListener("keydown", handler);
+		return () => window.removeEventListener("keydown", handler);
+	}, []);
 
 	return (
 		<div
@@ -135,6 +172,9 @@ function App() {
 					© Aaron Jay Gabato. Buy me a Coffee! ☕
 				</a>
 			</footer>
+
+			<FloatingChatButton isDark={isDark} />
+			{showAdmin && <AdminPage onClose={() => setShowAdmin(false)} isDark={isDark} />}
 		</div>
 	);
 }

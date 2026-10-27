@@ -7,7 +7,15 @@ export interface LatinHonorsCourse {
   year: number;
   term: LatinTerm;
   name?: string;
+  sourceScholarshipCourseId?: number;
   includeInLatinHonors: boolean;
+}
+
+export interface ScholarshipTransferResult {
+  courses: LatinHonorsCourse[];
+  addedCount: number;
+  updatedCount: number;
+  skippedCount: number;
 }
 
 export type LatinHonor = "Summa Cum Laude" | "Magna Cum Laude" | "Cum Laude" | "";
@@ -61,6 +69,10 @@ export function getCoursesForPeriod(
   year: number,
   term: LatinTerm,
 ): LatinHonorsCourse[];
+export function getNextScholarshipCourseId(
+  scholarshipCourses: import("./gwaCalculator.mjs").CalculatorCourse[],
+  latinHonorsCourses: LatinHonorsCourse[],
+): number;
 export function getLatinHonorsYearGroups(
   courses: LatinHonorsCourse[],
 ): LatinHonorsYearGroup[];
@@ -68,3 +80,9 @@ export function calculateLatinHonorsSummary(
   courses: LatinHonorsCourse[],
 ): LatinHonorsSummary;
 export function parseLatinHonorsCourses(value: unknown): LatinHonorsCourse[];
+export function transferScholarshipCourses(
+  scholarshipCourses: import("./gwaCalculator.mjs").CalculatorCourse[],
+  latinHonorsCourses: LatinHonorsCourse[],
+  year: number,
+  term: LatinTerm,
+): ScholarshipTransferResult;

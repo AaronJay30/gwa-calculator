@@ -8,8 +8,8 @@ any time; both use the same courses and calculated standing.
 - **Original** keeps the grade and unit dropdown rows.
 - **Modern** adds optional subject names, grade and unit controls, a course
   summary, demo courses, and a saved-course list.
-- The theme switch works in both layouts. Academic Scholarship entries stay in
-  browser memory until the page is refreshed.
+- The theme switch works in both layouts. Course entries, the selected layout,
+  and the selected computation type are saved in this browser on this device.
 - Modern lets you switch between Academic Scholarship and Latin Honors
   computations; Original keeps the existing Academic Scholarship calculator.
   Course units can be entered from 1 to 99.
@@ -43,6 +43,20 @@ and include the Academic Scholarship standing for each semester.
 The displayed GWA ranges are estimates based on the values supplied for the
 calculator: Summa Cum Laude up to 1.20, Magna Cum Laude up to 1.45, and Cum
 Laude up to 1.75. Official CLSU eligibility may include additional rules.
+
+## Save and transfer grades
+
+Academic Scholarship and Latin Honors course entries are automatically saved
+in this browser on this device. Course grades are not sent to the app's servers.
+Use **Save copy** to download a JSON backup containing both course lists, then
+use **Import copy** on another device to restore it. Importing replaces the
+current course lists only after confirmation. The selected layout and
+computation type are remembered locally but are not included in the backup.
+
+In Modern Academic Scholarship, choose **Transfer to Latin Honors** to copy
+completed courses into a selected year and semester. The scholarship entries
+stay in place; transferring the same courses to the same period again updates
+their copies instead of duplicating them.
 
 ## Admin visitor analytics
 

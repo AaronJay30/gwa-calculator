@@ -29,6 +29,9 @@ const latinHonorsModalModule = await vite
 const latinHonorsCalculatorModule = await vite
   .ssrLoadModule("/src/components/LatinHonorsCalculator.tsx")
   .catch(() => null);
+const saveCopyControlsModule = await vite
+  .ssrLoadModule("/src/components/SaveCopyControls.tsx")
+  .catch(() => null);
 
 test("[AC-MODE1026-F7] layout switch uses accessible icons without visible text", () => {
   const markup = renderToStaticMarkup(
@@ -265,6 +268,76 @@ test("[AC-LATINHONORS-UI1] computation selector is rendered only in Modern layou
   assert.match(appSource, /mode === "modern" && computationMode === "latin-honors"/);
 });
 
+test("[AC-SAVE1027-F2] save controls explain local storage and offer backup import and export", () => {
+  assert.ok(saveCopyControlsModule, "Save copy controls are missing");
+  const markup = renderToStaticMarkup(
+    React.createElement(saveCopyControlsModule.default, {
+      isDark: true,
+      scholarshipCourses: [],
+      latinHonorsCourses: [],
+      storageMessage: "",
+      onImport: () => {},
+    }),
+  );
+
+  assert.match(markup, /Your course grades stay in this browser on this device/);
+  assert.match(markup, /aren&#x27;t sent to our servers/);
+  assert.match(markup, /aria-label="Save a copy of your grades"/);
+  assert.match(markup, /aria-label="Import a save copy"/);
+});
+
+test("[AC-SAVE1027-F4] scholarship courses can be transferred and an empty list disables the action", () => {
+  const renderCalculator = (courses) =>
+    renderToStaticMarkup(
+      React.createElement(ModernCalculator, {
+        courses,
+        summary: {
+          courseCount: courses.length,
+          totalUnits: courses.reduce((sum, course) => sum + course.units, 0),
+          totalPoints: courses.reduce((sum, course) => sum + course.grades * course.units, 0),
+          gwa: 0,
+          academicStanding: "",
+        },
+        isDark: true,
+        onAddCourse: () => {},
+        onDeleteCourse: () => {},
+        onClearAll: () => {},
+        onDemoData: () => {},
+        onTransferCourses: () => ({ courses: [], addedCount: 0, updatedCount: 0, skippedCount: 0 }),
+      }),
+    );
+
+  const available = renderCalculator([
+    { id: 4, name: "Mathematics", grades: 1.25, units: 3 },
+  ]);
+  assert.match(available, /aria-label="Transfer courses to Latin Honors"/);
+  assert.doesNotMatch(available, /disabled=""[^>]*aria-label="Transfer courses to Latin Honors"/);
+
+  const unavailable = renderCalculator([
+    { id: 5, name: "Pending", grades: 0, units: 4 },
+  ]);
+  assert.match(unavailable, /disabled=""[^>]*aria-label="Transfer courses to Latin Honors"/);
+});
+
+test("[AC-SAVE1027-F4] transfer dialog offers years one through ten and all Latin Honors terms", async () => {
+  const componentSource = await readFile(
+    new URL("../src/components/ModernCalculator.tsx", import.meta.url),
+    "utf8",
+  );
+  const appSource = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
+
+  assert.match(componentSource, /Array\.from\(\{ length: 10 \}/);
+  assert.match(componentSource, /First Sem/);
+  assert.match(componentSource, /Mid Sem/);
+  assert.match(componentSource, /Second Sem/);
+  assert.match(componentSource, /ref=\{transferYearSelect\}/);
+  assert.match(componentSource, /transferYearSelect\.current\?\.focus\(\)/);
+  assert.match(componentSource, /onTransferCourses\(transferYear, transferTerm\)/);
+  assert.match(appSource, /transferScholarshipCourses\(inputList, latinHonorsCourses, year, term\)/);
+  assert.match(appSource, /setLatinPeriod\(\{ year, term \}\)/);
+  assert.match(appSource, /setComputationMode\("latin-honors"\)/);
+});
+
 test("[AC-LATINHONORS-UI2] Latin Honors grade entry uses previous and next buttons", async () => {
   const componentSource = await readFile(
     new URL("../src/components/LatinHonorsCalculator.tsx", import.meta.url),
@@ -336,57 +409,50 @@ test("[AC-LATINHONORS-UI5] Latin Honor result and semester scholarship use award
 
 test("[AC-LATINHONORS-UI7] Latin Honor image download appears only for a qualifying cumulative result", () => {
   assert.ok(latinHonorsCalculatorModule, "Latin Honors calculator is missing");
-  const previousWindow = globalThis.window;
   const renderWithSavedCourses = (courses) => {
-    globalThis.window = { localStorage: { getItem: () => JSON.stringify(courses) } };
     return renderToStaticMarkup(
-      React.createElement(latinHonorsCalculatorModule.default, { isDark: true }),
+      React.createElement(latinHonorsCalculatorModule.default, {
+        isDark: true,
+        courses,
+        onCoursesChange: () => {},
+        period: { year: 1, term: "first" },
+        onPeriodChange: () => {},
+      }),
     );
   };
 
-  try {
-    const emptyMarkup = renderWithSavedCourses([]);
-    assert.doesNotMatch(emptyMarkup, /Download .* Latin Honor result card/);
+  const emptyMarkup = renderWithSavedCourses([]);
+  assert.doesNotMatch(emptyMarkup, /Download .* Latin Honor result card/);
 
-    const qualifyingMarkup = renderWithSavedCourses([
-      { id: 1, name: "Mathematics", grades: 1.25, units: 12, year: 1, term: "first", includeInLatinHonors: true },
-    ]);
-    assert.match(qualifyingMarkup, /Download Magna Cum Laude Latin Honor result card/);
-  } finally {
-    if (previousWindow === undefined) delete globalThis.window;
-    else globalThis.window = previousWindow;
-  }
+  const qualifyingMarkup = renderWithSavedCourses([
+    { id: 1, name: "Mathematics", grades: 1.25, units: 12, year: 1, term: "first", includeInLatinHonors: true },
+  ]);
+  assert.match(qualifyingMarkup, /Download Magna Cum Laude Latin Honor result card/);
 });
 
 test("[AC-LATINHONORS-UI8] Latin Honor card matches the scholarship summary layout", () => {
   assert.ok(latinHonorsCalculatorModule, "Latin Honors calculator is missing");
-  const previousWindow = globalThis.window;
-  globalThis.window = {
-    localStorage: {
-      getItem: () => JSON.stringify([
+  const markup = renderToStaticMarkup(
+    React.createElement(latinHonorsCalculatorModule.default, {
+      isDark: true,
+      courses: [
         { id: 1, name: "Mathematics", grades: 1.25, units: 12, year: 1, term: "first", includeInLatinHonors: true },
-      ]),
-    },
-  };
-
-  try {
-    const markup = renderToStaticMarkup(
-      React.createElement(latinHonorsCalculatorModule.default, { isDark: true }),
-    );
-    assert.match(markup, /<h2 class="text-lg font-bold">Latin Honor<\/h2>/);
-    assert.match(markup, /aria-label="Open Latin Honors summary"/);
-    assert.match(markup, /aria-label="Download Magna Cum Laude Latin Honor result card"/);
-    assert.match(markup, /LATIN HONOR ACHIEVEMENT/);
-    assert.match(markup, /GENERAL WEIGHTED AVERAGE/);
-    assert.match(markup, /15\.00/);
-    assert.doesNotMatch(markup, /15\.0000/);
-    assert.doesNotMatch(markup, /GWA estimate using the ranges provided/);
-    assert.doesNotMatch(markup, />Download result</);
-    assert.doesNotMatch(markup, />Summary<\/button>/);
-  } finally {
-    if (previousWindow === undefined) delete globalThis.window;
-    else globalThis.window = previousWindow;
-  }
+      ],
+      onCoursesChange: () => {},
+      period: { year: 1, term: "first" },
+      onPeriodChange: () => {},
+    }),
+  );
+  assert.match(markup, /<h2 class="text-lg font-bold">Latin Honor<\/h2>/);
+  assert.match(markup, /aria-label="Open Latin Honors summary"/);
+  assert.match(markup, /aria-label="Download Magna Cum Laude Latin Honor result card"/);
+  assert.match(markup, /LATIN HONOR ACHIEVEMENT/);
+  assert.match(markup, /GENERAL WEIGHTED AVERAGE/);
+  assert.match(markup, /15\.00/);
+  assert.doesNotMatch(markup, /15\.0000/);
+  assert.doesNotMatch(markup, /GWA estimate using the ranges provided/);
+  assert.doesNotMatch(markup, />Download result</);
+  assert.doesNotMatch(markup, />Summary<\/button>/);
 });
 
 test("[AC-LATINHONORS-UI6] summary exports are lazy-loaded and errors remain visible", async () => {

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { FaDownload, FaPlus, FaRegTrashAlt, FaShareAlt } from "react-icons/fa";
+import React, { useEffect, useRef, useState } from "react";
+import { FaArrowRight, FaDownload, FaPlus, FaRegTrashAlt, FaShareAlt } from "react-icons/fa";
 import { GWA } from "../model";
 import {
   CalculatorSummary,
@@ -17,6 +17,7 @@ import {
   shareResult,
 } from "../resultCard.mjs";
 import CongratulationsModal from "./CongratulationsModal";
+import type { LatinTerm, ScholarshipTransferResult } from "../latinHonors.mjs";
 
 interface Props {
   courses: GWA[];
@@ -26,6 +27,7 @@ interface Props {
   onDeleteCourse: (id: number) => void;
   onClearAll: () => void;
   onDemoData: () => void;
+  onTransferCourses: (year: number, term: LatinTerm) => ScholarshipTransferResult;
 }
 
 const ModernCalculator: React.FC<Props> = ({
@@ -36,14 +38,23 @@ const ModernCalculator: React.FC<Props> = ({
   onDeleteCourse,
   onClearAll,
   onDemoData,
+  onTransferCourses,
 }) => {
   const [subject, setSubject] = useState("");
   const [grade, setGrade] = useState(1);
   const [units, setUnits] = useState(3);
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [shareMessage, setShareMessage] = useState("");
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [transferYear, setTransferYear] = useState(1);
+  const [transferTerm, setTransferTerm] = useState<LatinTerm>("first");
+  const transferYearSelect = useRef<HTMLSelectElement>(null);
+  const confirmTransfer = useRef<HTMLButtonElement>(null);
 
   const savedCourses = courses.filter((course) => course.units > 0);
+  const transferableCourses = savedCourses.filter(
+    (course) => VALID_GRADES.includes(course.grades) && course.units > 0,
+  );
   const canClearAll = hasCoursesToClear(courses);
   const panelStyle = isDark
     ? "bg-dark-primary text-dark-content"
@@ -67,6 +78,38 @@ const ModernCalculator: React.FC<Props> = ({
   const resultCardSvg = summary.academicStanding
     ? createShareResultSvg(summary, isDark)
     : "";
+
+  useEffect(() => {
+    if (!showTransfer) return;
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShowTransfer(false);
+      } else if (event.key === "Tab" && event.shiftKey && document.activeElement === transferYearSelect.current) {
+        event.preventDefault();
+        confirmTransfer.current?.focus();
+      } else if (event.key === "Tab" && !event.shiftKey && document.activeElement === confirmTransfer.current) {
+        event.preventDefault();
+        transferYearSelect.current?.focus();
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    transferYearSelect.current?.focus();
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+      if (previouslyFocused?.isConnected) previouslyFocused.focus();
+    };
+  }, [showTransfer]);
+
+  const handleTransfer = () => {
+    onTransferCourses(transferYear, transferTerm);
+    setShowTransfer(false);
+  };
 
   const handleAdd = () => {
     onAddCourse({
@@ -345,6 +388,16 @@ const ModernCalculator: React.FC<Props> = ({
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={() => setShowTransfer(true)}
+              disabled={transferableCourses.length === 0}
+              aria-label="Transfer courses to Latin Honors"
+              title="Transfer courses to Latin Honors"
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${focusRing} ${secondaryButton}`}>
+              <FaArrowRight aria-hidden="true" />
+              <span className="hidden sm:inline">Transfer</span>
+            </button>
+            <button
+              type="button"
               onClick={onDemoData}
               className={`rounded-lg px-3 py-2 text-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
                 isDark
@@ -400,6 +453,73 @@ const ModernCalculator: React.FC<Props> = ({
         )}
       </section>
       </div>
+      {showTransfer && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="transfer-courses-title"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setShowTransfer(false);
+          }}>
+          <div className={`w-full max-w-md rounded-2xl p-6 shadow-2xl ${panelStyle}`}>
+            <h2 id="transfer-courses-title" className="text-lg font-bold">
+              Transfer courses to Latin Honors
+            </h2>
+            <p className={`mt-2 text-sm ${mutedText}`}>
+              Copy {transferableCourses.length} completed {transferableCourses.length === 1 ? "course" : "courses"} into a year and semester. Your Academic Scholarship courses will stay in place.
+            </p>
+            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="transfer-year" className={`mb-1.5 block text-sm font-medium ${mutedText}`}>
+                  Academic year
+                </label>
+                <select
+                  ref={transferYearSelect}
+                  id="transfer-year"
+                  value={transferYear}
+                  onChange={(event) => setTransferYear(Number(event.target.value))}
+                  className={`w-full rounded-lg px-3 py-2 outline-none ring-offset-2 transition focus-visible:ring-2 ${focusRing} ${fieldStyle}`}>
+                  {Array.from({ length: 10 }, (_, index) => index + 1).map((year) => (
+                    <option key={year} value={year}>
+                      {ordinalYear(year)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="transfer-term" className={`mb-1.5 block text-sm font-medium ${mutedText}`}>
+                  Semester
+                </label>
+                <select
+                  id="transfer-term"
+                  value={transferTerm}
+                  onChange={(event) => setTransferTerm(event.target.value as LatinTerm)}
+                  className={`w-full rounded-lg px-3 py-2 outline-none ring-offset-2 transition focus-visible:ring-2 ${focusRing} ${fieldStyle}`}>
+                  <option value="first">First Sem</option>
+                  <option value="mid">Mid Sem</option>
+                  <option value="second">Second Sem</option>
+                </select>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowTransfer(false)}
+                className={`rounded-lg px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${focusRing} ${secondaryButton}`}>
+                Cancel
+              </button>
+              <button
+                ref={confirmTransfer}
+                type="button"
+                onClick={handleTransfer}
+                className={`rounded-lg px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${focusRing} ${primaryButton}`}>
+                Transfer courses
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showCongratulations && (
         <CongratulationsModal
           academicStanding={summary.academicStanding}
@@ -409,6 +529,11 @@ const ModernCalculator: React.FC<Props> = ({
       )}
     </>
   );
+};
+
+const ordinalYear = (year: number) => {
+  const labels = ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"];
+  return `${labels[year - 1]} Year`;
 };
 
 interface StepButtonProps {

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import ThemeSwitch from "./components/ThemeSwitch";
 import CalculatorModeSwitch, {
@@ -9,14 +9,45 @@ import ComputationModeSwitch, {
 } from "./components/ComputationModeSwitch";
 import ModernCalculator from "./components/ModernCalculator";
 import LatinHonorsCalculator from "./components/LatinHonorsCalculator";
+import SaveCopyControls from "./components/SaveCopyControls";
 import Input from "./components/Input";
 import FloatingChatButton from "./components/FloatingChatButton";
 import SupportModal from "./components/SupportModal";
 import { GWA } from "./model";
 import { calculateSummary } from "./gwaCalculator.mjs";
+import {
+	loadCalculatorData,
+	loadCalculatorPreferences,
+	saveCalculatorData,
+	saveCalculatorPreferences,
+} from "./calculatorSave.mjs";
+import { getNextScholarshipCourseId, transferScholarshipCourses } from "./latinHonors.mjs";
+import type { LatinHonorsCourse, LatinTerm } from "./latinHonors.mjs";
 import { recordVisit } from "./firebase/visitorService";
 
 const AdminPage = lazy(() => import("./components/AdminPage"));
+const EMPTY_SCHOLARSHIP_COURSE: GWA = { id: 0, grades: 0, units: 0 };
+
+const readInitialCalculatorState = () => {
+	try {
+		return {
+			...loadCalculatorData(window.localStorage),
+			...loadCalculatorPreferences(window.localStorage),
+			storageMessage: "",
+			loadError: false,
+		};
+	} catch (error) {
+		console.warn("Could not read saved calculator data:", error);
+		return {
+			scholarshipCourses: [EMPTY_SCHOLARSHIP_COURSE],
+			latinHonorsCourses: [],
+			mode: "original" as CalculatorMode,
+			computationMode: "scholarship" as ComputationMode,
+			storageMessage: "Saved grades could not be read. New changes can still be saved in this browser.",
+			loadError: true,
+		};
+	}
+};
 
 // Konami code: ↑↑↓↓←→←→BA — opens the admin page
 const KONAMI_CODE = [
@@ -26,23 +57,66 @@ const KONAMI_CODE = [
 ];
 
 function App() {
+	const [initialState] = useState(readInitialCalculatorState);
 	const [isDark, setIsDark] = useState(true);
-	const [mode, setMode] = useState<CalculatorMode>("original");
-	const [computationMode, setComputationMode] = useState<ComputationMode>("scholarship");
+	const [mode, setMode] = useState<CalculatorMode>(initialState.mode);
+	const [computationMode, setComputationMode] = useState<ComputationMode>(initialState.computationMode);
+	const [inputList, setInputList] = useState<GWA[]>(
+		initialState.scholarshipCourses.length
+			? initialState.scholarshipCourses
+			: [{
+				...EMPTY_SCHOLARSHIP_COURSE,
+				id: getNextScholarshipCourseId(
+					initialState.scholarshipCourses,
+					initialState.latinHonorsCourses,
+				),
+			}],
+	);
+	const [latinHonorsCourses, setLatinHonorsCourses] = useState<LatinHonorsCourse[]>(initialState.latinHonorsCourses);
+	const [latinPeriod, setLatinPeriod] = useState<{ year: number; term: LatinTerm }>({
+		year: 1,
+		term: "first",
+	});
+	const [storageMessage, setStorageMessage] = useState(initialState.storageMessage);
+	const skipInitialDataSave = useRef(true);
 	const [showModeHint, setShowModeHint] = useState(true);
 	const [showAdmin, setShowAdmin] = useState(false);
 	const [showSupport, setShowSupport] = useState(false);
 	const closeSupport = useCallback(() => setShowSupport(false), []);
 
-	const [inputList, setInputList] = useState<GWA[]>([
-		{ id: 0, grades: 0.0, units: 0 },
-	]);
 	const summary = calculateSummary(inputList);
 	const showDelete = inputList.length > 1;
 
+	useEffect(() => {
+		if (skipInitialDataSave.current) {
+			skipInitialDataSave.current = false;
+			if (initialState.loadError) return;
+		}
+
+		try {
+			saveCalculatorData(window.localStorage, {
+				scholarshipCourses: inputList,
+				latinHonorsCourses,
+			});
+			setStorageMessage("");
+		} catch (error) {
+			console.warn("Could not save calculator data:", error);
+			setStorageMessage("Browser storage is unavailable. Your entries may not stay after you leave this page.");
+		}
+	}, [initialState.loadError, inputList, latinHonorsCourses]);
+
+	useEffect(() => {
+		try {
+			saveCalculatorPreferences(window.localStorage, { mode, computationMode });
+		} catch (error) {
+			console.warn("Could not save calculator preferences:", error);
+			setStorageMessage("Browser storage is unavailable. Your entries may not stay after you leave this page.");
+		}
+	}, [mode, computationMode]);
+
 	const handleAddClick = () => {
 		setInputList((previous) => {
-			const nextId = Math.max(-1, ...previous.map((course) => course.id)) + 1;
+			const nextId = getNextScholarshipCourseId(previous, latinHonorsCourses);
 			return [...previous, { id: nextId, grades: 0, units: 0 }];
 		});
 	};
@@ -65,13 +139,16 @@ function App() {
 
 	const handleAddModernCourse = (course: Omit<GWA, "id">) => {
 		setInputList((previous) => {
-			const nextId = Math.max(-1, ...previous.map((item) => item.id)) + 1;
+			const nextId = getNextScholarshipCourseId(previous, latinHonorsCourses);
 			return [...previous, { id: nextId, ...course }];
 		});
 	};
 
 	const handleClearAll = () => {
-		setInputList([{ id: 0, grades: 0, units: 0 }]);
+		setInputList((previous) => [{
+			...EMPTY_SCHOLARSHIP_COURSE,
+			id: getNextScholarshipCourseId(previous, latinHonorsCourses),
+		}]);
 	};
 
 	const handleDemoData = () => {
@@ -82,7 +159,7 @@ function App() {
 		];
 
 		setInputList((previous) => {
-			const firstId = Math.max(-1, ...previous.map((item) => item.id)) + 1;
+			const firstId = getNextScholarshipCourseId(previous, latinHonorsCourses);
 			return [
 				...previous,
 				...demoCourses.map((course, index) => ({
@@ -91,6 +168,16 @@ function App() {
 				})),
 			];
 		});
+	};
+
+	const handleTransferCourses = (year: number, term: LatinTerm) => {
+		const result = transferScholarshipCourses(inputList, latinHonorsCourses, year, term);
+		setLatinHonorsCourses(result.courses);
+		if (result.addedCount + result.updatedCount > 0) {
+			setLatinPeriod({ year, term });
+			setComputationMode("latin-honors");
+		}
+		return result;
 	};
 
 	// Record a visit once on mount
@@ -163,6 +250,17 @@ function App() {
 						<ThemeSwitch setIsDark={setIsDark} isDark={isDark} />
 					</div>
 				</div>
+				<SaveCopyControls
+					isDark={isDark}
+					scholarshipCourses={inputList}
+					latinHonorsCourses={latinHonorsCourses}
+					storageMessage={storageMessage}
+					onImport={(data) => {
+						setInputList(data.scholarshipCourses);
+						setLatinHonorsCourses(data.latinHonorsCourses);
+						setStorageMessage("");
+					}}
+				/>
 				{mode === "modern" && (
 					<ComputationModeSwitch
 						mode={computationMode}
@@ -180,6 +278,7 @@ function App() {
 						onDeleteCourse={handleCourseDelete}
 						onClearAll={handleClearAll}
 						onDemoData={handleDemoData}
+						onTransferCourses={handleTransferCourses}
 					/>
 				</div>
 
@@ -233,7 +332,13 @@ function App() {
 				</div>
 
 				<div className={mode === "modern" && computationMode === "latin-honors" ? "" : "hidden"}>
-					<LatinHonorsCalculator isDark={isDark} />
+					<LatinHonorsCalculator
+						isDark={isDark}
+						courses={latinHonorsCourses}
+						onCoursesChange={setLatinHonorsCourses}
+						period={latinPeriod}
+						onPeriodChange={setLatinPeriod}
+					/>
 				</div>
 			</div>
 

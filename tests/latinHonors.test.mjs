@@ -237,3 +237,135 @@ test("[AC-LATINHONORS-STORAGE1] only valid stored course records are restored", 
     ],
   );
 });
+
+test("[AC-SAVE1027-F4] transfer copies only completed scholarship courses into the chosen period", () => {
+  const { transferScholarshipCourses } = getLatinHonors();
+  const scholarshipCourses = [
+    { id: 4, name: "Mathematics", grades: 1.25, units: 3 },
+    { id: 5, name: "Pending", grades: 0, units: 4 },
+    { id: 6, name: "No units", grades: 1.5, units: 0 },
+  ];
+  const latinHonorsCourses = [
+    { id: 8, name: "Existing", grades: 1.75, units: 3, year: 2, term: "first" },
+  ];
+
+  const result = transferScholarshipCourses(
+    scholarshipCourses,
+    latinHonorsCourses,
+    3,
+    "mid",
+  );
+
+  assert.deepEqual(result, {
+    courses: [
+      latinHonorsCourses[0],
+      {
+        id: 9,
+        sourceScholarshipCourseId: 4,
+        name: "Mathematics",
+        grades: 1.25,
+        units: 3,
+        year: 3,
+        term: "mid",
+        includeInLatinHonors: true,
+      },
+    ],
+    addedCount: 1,
+    updatedCount: 0,
+    skippedCount: 2,
+  });
+  assert.equal(scholarshipCourses[0].name, "Mathematics");
+});
+
+test("[AC-SAVE1027-F5] repeat transfer updates a linked course without changing its exclusion choice", () => {
+  const { transferScholarshipCourses } = getLatinHonors();
+  const scholarshipCourses = [
+    { id: 4, name: "Mathematics", grades: 1.25, units: 4 },
+  ];
+  const existingLatinCourses = [
+    {
+      id: 20,
+      sourceScholarshipCourseId: 4,
+      name: "Old Mathematics",
+      grades: 1.5,
+      units: 3,
+      year: 1,
+      term: "first",
+      includeInLatinHonors: false,
+    },
+  ];
+
+  const result = transferScholarshipCourses(
+    scholarshipCourses,
+    existingLatinCourses,
+    1,
+    "first",
+  );
+
+  assert.deepEqual(result, {
+    courses: [
+      {
+        ...existingLatinCourses[0],
+        name: "Mathematics",
+        grades: 1.25,
+        units: 4,
+      },
+    ],
+    addedCount: 0,
+    updatedCount: 1,
+    skippedCount: 0,
+  });
+
+  const repeated = transferScholarshipCourses(
+    scholarshipCourses,
+    result.courses,
+    1,
+    "first",
+  );
+  assert.equal(repeated.courses.length, 1);
+  assert.equal(repeated.addedCount, 0);
+  assert.equal(repeated.courses[0].includeInLatinHonors, false);
+});
+
+test("[AC-SAVE1027-F4] a linked scholarship course can be copied to a different period", () => {
+  const { transferScholarshipCourses } = getLatinHonors();
+  const scholarshipCourses = [
+    { id: 4, name: "Mathematics", grades: 1.25, units: 3 },
+  ];
+  const firstPeriod = transferScholarshipCourses(
+    scholarshipCourses,
+    [],
+    1,
+    "first",
+  );
+  const secondPeriod = transferScholarshipCourses(
+    scholarshipCourses,
+    firstPeriod.courses,
+    1,
+    "second",
+  );
+
+  assert.equal(secondPeriod.courses.length, 2);
+  assert.equal(secondPeriod.addedCount, 1);
+  assert.equal(secondPeriod.courses[1].year, 1);
+  assert.equal(secondPeriod.courses[1].term, "second");
+});
+
+test("[AC-SAVE1027-F5] scholarship course ids do not collide with retained transferred copies", () => {
+  const { getNextScholarshipCourseId } = getLatinHonors();
+
+  assert.equal(
+    getNextScholarshipCourseId(
+      [{ id: 0, grades: 0, units: 0 }],
+      [{
+        id: 12,
+        sourceScholarshipCourseId: 4,
+        grades: 1.25,
+        units: 3,
+        year: 1,
+        term: "first",
+      }],
+    ),
+    5,
+  );
+});

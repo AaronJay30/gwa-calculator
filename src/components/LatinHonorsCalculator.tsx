@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { FaChevronLeft, FaChevronRight, FaDownload, FaListAlt, FaPlus, FaRegTrashAlt } from "react-icons/fa";
 import {
   calculateSummary,
@@ -9,7 +9,6 @@ import {
 import {
   calculateLatinHonorsSummary,
   getCoursesForPeriod,
-  parseLatinHonorsCourses,
 } from "../latinHonors.mjs";
 import type { LatinHonorsCourse, LatinTerm } from "../latinHonors.mjs";
 import {
@@ -21,7 +20,6 @@ import {
 import CongratulationsModal from "./CongratulationsModal";
 import LatinHonorsSummaryModal from "./LatinHonorsSummaryModal";
 
-const STORAGE_KEY = "gwa-calculator:latin-honors:v1";
 const YEARS = [
   "First",
   "Second",
@@ -42,29 +40,20 @@ const TERMS: { id: LatinTerm; label: string }[] = [
 
 interface Props {
   isDark: boolean;
+  courses: LatinHonorsCourse[];
+  onCoursesChange: React.Dispatch<React.SetStateAction<LatinHonorsCourse[]>>;
+  period: { year: number; term: LatinTerm };
+  onPeriodChange: React.Dispatch<React.SetStateAction<{ year: number; term: LatinTerm }>>;
 }
 
-const readSavedCourses = (): { courses: LatinHonorsCourse[]; error: string } => {
-  try {
-    return {
-      courses: parseLatinHonorsCourses(window.localStorage.getItem(STORAGE_KEY)),
-      error: "",
-    };
-  } catch (error) {
-    console.warn("Could not read saved Latin Honors courses:", error);
-    return {
-      courses: [],
-      error: "Browser storage is unavailable. Your entries will stay only until you leave this page.",
-    };
-  }
-};
-
-const LatinHonorsCalculator: React.FC<Props> = ({ isDark }) => {
-  const [initialState] = useState(readSavedCourses);
-  const [courses, setCourses] = useState(initialState.courses);
-  const [storageMessage, setStorageMessage] = useState(initialState.error);
-  const [year, setYear] = useState(1);
-  const [term, setTerm] = useState<LatinTerm>("first");
+const LatinHonorsCalculator: React.FC<Props> = ({
+  isDark,
+  courses,
+  onCoursesChange,
+  period,
+  onPeriodChange,
+}) => {
+  const { year, term } = period;
   const [subject, setSubject] = useState("");
   const [grade, setGrade] = useState(1);
   const [units, setUnits] = useState(3);
@@ -74,18 +63,6 @@ const LatinHonorsCalculator: React.FC<Props> = ({ isDark }) => {
   const [downloadingCard, setDownloadingCard] = useState(false);
   const [downloadError, setDownloadError] = useState("");
   const closeSummary = useCallback(() => setShowSummary(false), []);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(courses));
-      setStorageMessage("");
-    } catch (error) {
-      console.warn("Could not save Latin Honors courses:", error);
-      setStorageMessage(
-        "Browser storage is unavailable. Your entries will stay only until you leave this page.",
-      );
-    }
-  }, [courses]);
 
   const termCourses = getCoursesForPeriod(courses, year, term);
   const countedTermCourses = termCourses.filter(
@@ -130,7 +107,7 @@ const LatinHonorsCalculator: React.FC<Props> = ({ isDark }) => {
   };
 
   const handleAddCourse = () => {
-    setCourses((previous) => {
+    onCoursesChange((previous) => {
       const id = Math.max(-1, ...previous.map((course) => course.id)) + 1;
       return [
         ...previous,
@@ -152,14 +129,14 @@ const LatinHonorsCalculator: React.FC<Props> = ({ isDark }) => {
   };
 
   const handleClearPeriod = () => {
-    setCourses((previous) =>
+    onCoursesChange((previous) =>
       previous.filter((course) => course.year !== year || course.term !== term),
     );
   };
 
   const setTermByOffset = (offset: -1 | 1) => {
     const nextIndex = Math.max(0, Math.min(TERMS.length - 1, termIndex + offset));
-    setTerm(TERMS[nextIndex].id);
+    onPeriodChange((previous) => ({ ...previous, term: TERMS[nextIndex].id }));
   };
 
   return (
@@ -237,8 +214,8 @@ const LatinHonorsCalculator: React.FC<Props> = ({ isDark }) => {
           <PeriodNavigator
             label="Academic year"
             value={`${YEARS[year - 1]} Year`}
-            onPrevious={() => setYear((current) => Math.max(1, current - 1))}
-            onNext={() => setYear((current) => Math.min(10, current + 1))}
+            onPrevious={() => onPeriodChange((previous) => ({ ...previous, year: Math.max(1, previous.year - 1) }))}
+            onNext={() => onPeriodChange((previous) => ({ ...previous, year: Math.min(10, previous.year + 1) }))}
             previousDisabled={year === 1}
             nextDisabled={year === 10}
             isDark={isDark}
@@ -436,7 +413,7 @@ const LatinHonorsCalculator: React.FC<Props> = ({ isDark }) => {
                   <CourseValue label="Points" value={points.toFixed(2)} />
                   <button
                     type="button"
-                    onClick={() => setCourses((previous) => previous.filter((item) => item.id !== course.id))}
+                    onClick={() => onCoursesChange((previous) => previous.filter((item) => item.id !== course.id))}
                     aria-label={`Delete ${name}`}
                     className="rounded-lg bg-danger-1 p-2 text-dark-content transition hover:bg-danger-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger-2">
                     <FaRegTrashAlt aria-hidden="true" />
@@ -445,11 +422,6 @@ const LatinHonorsCalculator: React.FC<Props> = ({ isDark }) => {
               );
             })}
           </ul>
-        )}
-        {storageMessage && (
-          <p className={`mt-3 text-xs ${mutedText}`} role="status">
-            {storageMessage}
-          </p>
         )}
       </section>
       {showSummary && (

@@ -5,9 +5,9 @@ export const MAX_UNITS = 99;
 
 export const getAcademicStanding = (gwa, totalUnits) => {
   if (totalUnits <= 10) return "";
-  if (gwa <= 1.5) return "University Scholar";
-  if (gwa >= 1.51 && gwa <= 1.75) return "College Scholar";
-  if (gwa >= 1.76 && gwa <= 2) return "Dean's Lister";
+  if (gwa < 1.51) return "University Scholar";
+  if (gwa < 1.76) return "College Scholar";
+  if (gwa <= 2) return "Dean's Lister";
   return "";
 };
 

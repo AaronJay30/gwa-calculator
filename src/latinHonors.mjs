@@ -6,6 +6,13 @@ const TERM_ORDER = ["first", "mid", "second"];
 export const getCoursesForPeriod = (courses, year, term) =>
   courses.filter((course) => course.year === year && course.term === term);
 
+export const getNextScholarshipCourseId = (scholarshipCourses, latinHonorsCourses) =>
+  Math.max(
+    -1,
+    ...scholarshipCourses.map((course) => course.id),
+    ...latinHonorsCourses.map((course) => course.sourceScholarshipCourseId ?? -1),
+  ) + 1;
+
 export const getLatinHonorsYearGroups = (courses) => {
   const years = [...new Set(courses.map((course) => course.year))].sort(
     (left, right) => left - right,
@@ -78,6 +85,9 @@ export const parseLatinHonorsCourses = (value) => {
       course.year > 10 ||
       !VALID_TERMS.has(course.term) ||
       (course.name !== undefined && typeof course.name !== "string") ||
+      (course.sourceScholarshipCourseId !== undefined &&
+        (!Number.isInteger(course.sourceScholarshipCourseId) ||
+          course.sourceScholarshipCourseId < 0)) ||
       (course.includeInLatinHonors !== undefined &&
         typeof course.includeInLatinHonors !== "boolean")
     ) {
@@ -92,8 +102,81 @@ export const parseLatinHonorsCourses = (value) => {
         year: course.year,
         term: course.term,
         ...(course.name !== undefined ? { name: course.name } : {}),
+        ...(course.sourceScholarshipCourseId !== undefined
+          ? { sourceScholarshipCourseId: course.sourceScholarshipCourseId }
+          : {}),
         includeInLatinHonors: course.includeInLatinHonors !== false,
       },
     ];
   });
+};
+
+export const transferScholarshipCourses = (
+  scholarshipCourses,
+  latinHonorsCourses,
+  year,
+  term,
+) => {
+  if (!Number.isInteger(year) || year < 1 || year > 10 || !VALID_TERMS.has(term)) {
+    return {
+      courses: latinHonorsCourses,
+      addedCount: 0,
+      updatedCount: 0,
+      skippedCount: scholarshipCourses.length,
+    };
+  }
+
+  const completedCourses = scholarshipCourses.filter(
+    (course) =>
+      Number.isInteger(course.id) &&
+      course.id >= 0 &&
+      VALID_GRADES.includes(course.grades) &&
+      Number.isInteger(course.units) &&
+      course.units > 0 &&
+      course.units <= MAX_UNITS,
+  );
+  const courses = [...latinHonorsCourses];
+  let nextId = Math.max(-1, ...courses.map((course) => course.id));
+  let addedCount = 0;
+  let updatedCount = 0;
+
+  for (const source of completedCourses) {
+    const existingIndex = courses.findIndex(
+      (course) =>
+        course.sourceScholarshipCourseId === source.id &&
+        course.year === year &&
+        course.term === term,
+    );
+
+    if (existingIndex >= 0) {
+      const existing = courses[existingIndex];
+      courses[existingIndex] = {
+        ...existing,
+        ...(source.name !== undefined ? { name: source.name } : {}),
+        grades: source.grades,
+        units: source.units,
+      };
+      updatedCount += 1;
+      continue;
+    }
+
+    courses.push({
+      id: ++nextId,
+      sourceScholarshipCourseId: source.id,
+      ...(source.name !== undefined ? { name: source.name } : {}),
+      grades: source.grades,
+      units: source.units,
+      year,
+      term,
+      includeInLatinHonors: true,
+    });
+    addedCount += 1;
+  }
+
+  return {
+    courses,
+    addedCount,
+    updatedCount,
+    skippedCount: scholarshipCourses.length - completedCourses.length,
+  };
 };

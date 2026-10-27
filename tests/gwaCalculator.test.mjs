@@ -78,9 +78,12 @@ test("[AC-MODE1026-F5] academic standing preserves GWA and unit thresholds", () 
 
   assert.equal(getAcademicStanding(1, 10), "");
   assert.equal(getAcademicStanding(1.5, 11), "University Scholar");
-  assert.equal(getAcademicStanding(1.505, 11), "");
+  assert.equal(getAcademicStanding(1.5032, 11), "University Scholar");
+  assert.equal(getAcademicStanding(1.50999999, 11), "University Scholar");
+  assert.equal(getAcademicStanding(1.505, 11), "University Scholar");
   assert.equal(getAcademicStanding(1.51, 11), "College Scholar");
   assert.equal(getAcademicStanding(1.75, 11), "College Scholar");
+  assert.equal(getAcademicStanding(1.755, 11), "College Scholar");
   assert.equal(getAcademicStanding(1.76, 11), "Dean's Lister");
   assert.equal(getAcademicStanding(2, 11), "Dean's Lister");
   assert.equal(getAcademicStanding(2.0001, 11), "");

@@ -192,7 +192,7 @@ const AdminPage: React.FC<Props> = ({ onClose, isDark }) => {
                         />
                       </div>
                       <span className="w-20 text-right shrink-0">
-                        {d.visits} <span className="opacity-40">/ {d.uniqueVisitors}u</span>
+                        {d.visits} <span className="opacity-40">/ {d.uniqueVisitors}</span>
                       </span>
                     </div>
                   ))}

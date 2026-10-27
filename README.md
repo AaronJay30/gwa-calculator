@@ -1,27 +1,34 @@
-# React + TypeScript + Vite
+# GWA Calculator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A grade average calculator with Original and Modern layouts. Switch layouts at
+any time; both use the same courses and calculated standing.
 
-Currently, two official plugins are available:
+## Layouts
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Original** keeps the grade and unit dropdown rows.
+- **Modern** adds optional subject names, grade and unit controls, a course
+  summary, demo courses, and a saved-course list.
+- The theme switch works in both layouts. Modern course entries are kept in
+  browser memory until the page is refreshed.
+- When a scholarship standing qualifies, Modern highlights the award and lets
+  you download a share card or share your result. Downloading the card opens a
+  congratulatory modal.
 
-## Expanding the ESLint configuration
+## GWA and academic standing
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+The calculator uses `sum(grade × units) / sum(units)` and displays the GWA to
+four decimal places. Academic standing is shown when the total exceeds 10 units:
 
-- Configure the top-level `parserOptions` property like this:
+- University Scholar: GWA 1.50 or lower
+- College Scholar: GWA 1.51–1.75
+- Dean's Lister: GWA 1.76–2.00
 
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
+## Development
+
+```bash
+npm install
+npm run dev
+npm test
+npm run lint
+npm run build
 ```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list

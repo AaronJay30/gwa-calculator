@@ -1,0 +1,54 @@
+.scholarship-remark {
+  transform-origin: left center;
+  animation: scholarship-remark 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.achievement-confetti {
+  position: absolute;
+  top: -18px;
+  width: 9px;
+  height: 14px;
+  opacity: 0;
+  animation: achievement-confetti-fall var(--confetti-duration, 3s) linear var(--confetti-delay, 0s) infinite;
+}
+
+@keyframes scholarship-remark {
+  0% {
+    opacity: 0;
+    transform: translateY(9px) scale(0.92);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(0) scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes achievement-confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) rotate(0deg);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--confetti-drift, 0), 85vh, 0)
+      rotate(var(--confetti-rotation, 620deg));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scholarship-remark,
+  .achievement-confetti {
+    animation: none;
+  }
+
+  .achievement-confetti {
+    display: none;
+  }
+}

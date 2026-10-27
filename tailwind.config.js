@@ -30,6 +30,7 @@ export default {
         'danger': {
           1: '#CA0000',
           2: '#7A0000',
+          3: '#FF8A8A',
         },
       
      },

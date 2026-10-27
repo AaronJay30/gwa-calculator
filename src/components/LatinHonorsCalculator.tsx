@@ -353,7 +353,7 @@ const LatinHonorsCalculator: React.FC<Props> = ({
           <span>
             Include in Latin Honors GWA
             <span className="mt-0.5 block text-xs">
-              Leave unchecked for PE, NSTP, or other courses excluded from your GWA.
+              Leave unchecked for NSTP, or other courses excluded from your GWA.
             </span>
           </span>
         </label>

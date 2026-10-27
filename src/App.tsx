@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import "./App.css";
 import ThemeSwitch from "./components/ThemeSwitch";
 import CalculatorModeSwitch, {
@@ -7,10 +7,12 @@ import CalculatorModeSwitch, {
 import ModernCalculator from "./components/ModernCalculator";
 import Input from "./components/Input";
 import FloatingChatButton from "./components/FloatingChatButton";
-import AdminPage from "./components/AdminPage";
+import SupportModal from "./components/SupportModal";
 import { GWA } from "./model";
 import { calculateSummary } from "./gwaCalculator.mjs";
 import { recordVisit } from "./firebase/visitorService";
+
+const AdminPage = lazy(() => import("./components/AdminPage"));
 
 // Konami code: ↑↑↓↓←→←→BA — opens the admin page
 const KONAMI_CODE = [
@@ -22,7 +24,10 @@ const KONAMI_CODE = [
 function App() {
 	const [isDark, setIsDark] = useState(true);
 	const [mode, setMode] = useState<CalculatorMode>("original");
+	const [showModeHint, setShowModeHint] = useState(true);
 	const [showAdmin, setShowAdmin] = useState(false);
+	const [showSupport, setShowSupport] = useState(false);
+	const closeSupport = useCallback(() => setShowSupport(false), []);
 
 	const [inputList, setInputList] = useState<GWA[]>([
 		{ id: 0, grades: 0.0, units: 0 },
@@ -143,8 +148,12 @@ function App() {
 					<div className="flex shrink-0 flex-col items-end gap-2">
 						<CalculatorModeSwitch
 							mode={mode}
-							onChange={setMode}
+							onChange={(nextMode) => {
+								setMode(nextMode);
+								if (nextMode === "modern") setShowModeHint(false);
+							}}
 							isDark={isDark}
+							showNewModeHint={showModeHint}
 						/>
 						<ThemeSwitch setIsDark={setIsDark} isDark={isDark} />
 					</div>
@@ -220,15 +229,31 @@ function App() {
 						? "mx-auto w-full sm:w-1/2 md:w-3/4 lg:w-1/2 px-4 py-4 text-right"
 						: "fixed bottom-4 right-4"
 				}`}>
-				<a
-					href="https://aaronjay30.github.io/aaronjay_portfolio/"
-					target="_blank">
+			<button
+				type="button"
+				onClick={() => setShowSupport(true)}
+				aria-haspopup="dialog"
+				className="rounded-sm transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
 					© Aaron Jay Gabato. Buy me a Coffee! ☕
-				</a>
+			</button>
 			</footer>
 
 			<FloatingChatButton isDark={isDark} />
-			{showAdmin && <AdminPage onClose={() => setShowAdmin(false)} isDark={isDark} />}
+			{showSupport && (
+				<SupportModal isDark={isDark} onClose={closeSupport} />
+			)}
+			{showAdmin && (
+				<Suspense
+					fallback={
+						<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md" role="status" aria-live="polite">
+							<div className={`rounded-xl p-6 text-sm shadow-2xl ${isDark ? "bg-dark-primary text-dark-content" : "bg-light-primary text-light-content"}`}>
+								Loading visitor analytics…
+							</div>
+						</div>
+					}>
+					<AdminPage onClose={() => setShowAdmin(false)} isDark={isDark} />
+				</Suspense>
+			)}
 		</div>
 	);
 }

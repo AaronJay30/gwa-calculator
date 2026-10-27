@@ -14,6 +14,8 @@ Add an Original/Modern layout toggle to the GWA calculator. Modern keeps the ref
 - Preserve the current light/dark theme and the existing scholarship rules.
 - Keep Modern at the Original layout's responsive width and visual scale so the alternate layout feels compact.
 - Provide the Demo Data and Clear All actions shown in the reference.
+- Help users discover Modern mode with a broken-line circle, a curved dashed
+  arrow, and a small “Try me” label.
 
 ## Non-goals
 
@@ -49,6 +51,9 @@ Add an Original/Modern layout toggle to the GWA calculator. Modern keeps the ref
 - **[AC-MODE1026-F7]** The mode toggle displays two icons without visible text, exposes accessible names and selected state, and appears above the theme control.
 - **[AC-MODE1026-F8]** Modern uses the Original layout's responsive width, result size, and configured theme colors in both light and dark themes.
 - **[AC-MODE1026-F9]** The mode and theme controls stack vertically, with the mode control first.
+- **[AC-MODE1026-F10]** While Original is active, a broken-line circle highlights Modern, a curved dashed arrow with “Try me” points to it, and the arrow nudges in and out; motion respects reduced-motion settings.
+- **[AC-MODE1026-E2]** The visual cue is hidden while Modern is active.
+- **[AC-MODE1026-E3]** Selecting Modern hides the visual cue for the rest of the current page session.
 
 ## Security considerations
 

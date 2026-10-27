@@ -41,6 +41,52 @@ test("[AC-MODE1026-F7] layout switch uses accessible icons without visible text"
   assert.doesNotMatch(markup, />\s*(Original|Modern)\s*<\/button>/);
 });
 
+test("[AC-MODE1026-F10] mode hint sits above the Modern icon without blocking it", async () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(CalculatorModeSwitch, {
+      mode: "original",
+      onChange: () => {},
+      isDark: true,
+      showNewModeHint: true,
+    }),
+  );
+  const styles = await readFile(new URL("../src/App.css", import.meta.url), "utf8");
+
+  assert.match(markup, /mode-hint-arrow/);
+  assert.match(markup, /Try Modern/);
+  assert.match(markup, /pointer-events-none absolute/);
+  assert.doesNotMatch(markup, /mode-hint-ring|stroke-dasharray/);
+  assert.equal((markup.match(/<button\b/g) ?? []).length, 2);
+  assert.doesNotMatch(markup, /New mode! Try Modern|Dismiss new mode hint/);
+  assert.match(styles, /@keyframes mode-hint-nudge/);
+  assert.match(styles, /prefers-reduced-motion:\s*reduce[\s\S]*\.mode-hint-arrow/);
+});
+
+test("[AC-MODE1026-E2] new-mode cue is hidden while Modern is active", () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(CalculatorModeSwitch, {
+      mode: "modern",
+      onChange: () => {},
+      isDark: true,
+      showNewModeHint: true,
+    }),
+  );
+
+  assert.doesNotMatch(markup, /mode-hint-ring|mode-hint-arrow|Try me/);
+});
+
+test("[AC-MODE1026-E3] selecting Modern hides the cue for the page session", async () => {
+  const appSource = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
+  const switchSource = await readFile(
+    new URL("../src/components/CalculatorModeSwitch.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(appSource, /nextMode === "modern"\) setShowModeHint\(false\)/);
+  assert.match(switchSource, /showNewModeHint && mode === "original"/);
+  assert.doesNotMatch(switchSource, /New mode! Try Modern|Dismiss new mode hint/);
+});
+
 test("[AC-MODE1026-F8] Modern view uses Original palette and compact result sizing", () => {
   const markup = renderToStaticMarkup(
     React.createElement(ModernCalculator, {

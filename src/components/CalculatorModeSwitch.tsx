@@ -1,5 +1,5 @@
 import React from "react";
-import { FaListUl, FaThLarge } from "react-icons/fa";
+import { FaArrowDown, FaListUl, FaThLarge } from "react-icons/fa";
 
 export type CalculatorMode = "original" | "modern";
 
@@ -7,9 +7,15 @@ interface Props {
   mode: CalculatorMode;
   onChange: (mode: CalculatorMode) => void;
   isDark: boolean;
+  showNewModeHint?: boolean;
 }
 
-const CalculatorModeSwitch: React.FC<Props> = ({ mode, onChange, isDark }) => {
+const CalculatorModeSwitch: React.FC<Props> = ({
+  mode,
+  onChange,
+  isDark,
+  showNewModeHint = false,
+}) => {
   const inactiveText = isDark ? "text-dark-content/60" : "text-light-content/60";
   const activeStyle = isDark
     ? "bg-dark-accent-1 text-light-content"
@@ -17,9 +23,11 @@ const CalculatorModeSwitch: React.FC<Props> = ({ mode, onChange, isDark }) => {
   const focusStyle = isDark
     ? "focus-visible:outline-dark-accent-1"
     : "focus-visible:outline-light-accent-1";
+  const showHint = showNewModeHint && mode === "original";
+  const hintColor = isDark ? "text-dark-content" : "text-light-content";
 
   return (
-    <div className="flex items-center" role="group" aria-label="Calculator layout">
+    <div className="relative flex flex-col items-end" role="group" aria-label="Calculator layout">
       <div
         className={`flex gap-1 rounded-lg p-1 ${
           isDark ? "bg-dark-primary" : "bg-light-primary"
@@ -41,12 +49,20 @@ const CalculatorModeSwitch: React.FC<Props> = ({ mode, onChange, isDark }) => {
           title="Modern layout"
           aria-pressed={mode === "modern"}
           onClick={() => onChange("modern")}
-          className={`flex h-9 w-9 items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${focusStyle} ${
+          className={`relative flex h-9 w-9 items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${focusStyle} ${
             mode === "modern" ? activeStyle : inactiveText
           }`}>
           <FaThLarge aria-hidden="true" />
         </button>
       </div>
+      {showHint && (
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute -top-10 -right-3 z-20 flex w-[72px] flex-col items-center gap-0.5 whitespace-nowrap text-[11px] font-semibold ${hintColor}`}>
+          <span>Try Modern</span>
+          <FaArrowDown className="mode-hint-arrow h-3 w-3" />
+        </div>
+      )}
     </div>
   );
 };

@@ -53,7 +53,7 @@ export const createShareResultSvg = (summary, isDark) => {
   const gwa = Number(summary.gwa).toFixed(4);
   const courseCount = escapeXml(summary.courseCount.toLocaleString());
   const totalUnits = escapeXml(summary.totalUnits.toLocaleString());
-  const totalPoints = Number(summary.totalPoints).toFixed(4);
+  const totalPoints = Number(summary.totalPoints).toFixed(2);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
   <rect width="${WIDTH}" height="${HEIGHT}" fill="${colors.background}" />

@@ -9,7 +9,7 @@ import {
   getDocs,
   orderBy,
   query,
-  limit,
+  where,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "./config";
@@ -116,15 +116,17 @@ export const fetchGlobalStats = async (): Promise<VisitorStats> => {
 };
 
 /**
- * Fetches the last N days of daily stats, newest first.
+ * Fetches daily stats for an inclusive YYYY-MM-DD date range, oldest first.
  */
 export const fetchDailyStats = async (
-  days = 30,
+  startDate: string,
+  endDate: string,
 ): Promise<DailyStat[]> => {
   const q = query(
     collection(db, "dailyStats"),
-    orderBy("date", "desc"),
-    limit(days),
+    where("date", ">=", startDate),
+    where("date", "<=", endDate),
+    orderBy("date", "asc"),
   );
   const snapshot = await getDocs(q);
   return snapshot.docs.map((d) => {

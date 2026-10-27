@@ -69,7 +69,10 @@
 
 **Files:**
 - Create: `src/components/ModernCalculator.tsx`
+- Modify: `src/components/CalculatorModeSwitch.tsx`
 - Modify: `src/App.tsx`
+- Modify: `src/App.css`
+- Modify: `tests/presentation.test.mjs`
 - Modify: `README.md`
 
 **Interfaces:**
@@ -81,6 +84,7 @@
 - [ ] Add the optional subject field, valid grade and unit steppers, Add Subject action, and responsive saved-course list with deletion.
 - [ ] Implement Demo Data and Clear All against the shared course state.
 - [ ] Apply the existing light/dark theme to Modern mode and keep the layout usable at mobile widths.
+- [x] Show a broken-line circle, curved dashed arrow, and “Try me” label around the Modern icon while Original is active; hide the cue after Modern is selected and respect reduced-motion settings.
 - [ ] Update the README with the two modes and existing scholarship rules.
 - [ ] Run `npm test`, `npm run lint`, and `npm run build`.
 

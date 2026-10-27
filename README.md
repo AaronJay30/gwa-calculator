@@ -23,6 +23,15 @@ four decimal places. Academic standing is shown when the total exceeds 10 units:
 - College Scholar: GWA 1.51–1.75
 - Dean's Lister: GWA 1.76–2.00
 
+## Admin visitor analytics
+
+The admin analytics panel shows all-time visit totals and a daily line chart
+for visits and unique visitors. Filter the chart to the last week, the last 30
+days, or an inclusive custom date range. The busiest date is called out above
+the chart; missing daily records appear as zero. Unique visitor values in the
+chart are per-day counts, so the same person may be counted on more than one
+day in a selected range.
+
 ## Development
 
 ```bash

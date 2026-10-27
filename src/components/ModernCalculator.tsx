@@ -128,7 +128,7 @@ const ModernCalculator: React.FC<Props> = ({
         {summary.academicStanding ? (
           <div className={`w-full rounded-xl p-6 ${panelStyle}`}>
             <header className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-bold">GWA Calculator</h2>
+              <h2 className="text-lg font-bold">Academic Scholarship</h2>
               <div className="flex shrink-0 items-center gap-2">
                 <button
                   type="button"
@@ -157,13 +157,13 @@ const ModernCalculator: React.FC<Props> = ({
               </div>
             </header>
             <div className="mt-5 w-full rounded-lg bg-dark-accent-1 px-4 py-3 text-dark-primary">
-              <p className="text-[10px] font-semibold tracking-[0.12em]">
-                ACADEMIC ACHIEVEMENT
-              </p>
-              <p className="mt-1 text-xl font-bold sm:text-2xl">
-                {summary.academicStanding}
-              </p>
-            </div>
+                <p className="text-[10px] font-semibold tracking-[0.12em]">
+                  ACADEMIC ACHIEVEMENT
+                </p>
+                <p className="scholarship-remark mt-1 text-xl font-bold sm:text-2xl">
+                  {summary.academicStanding}
+                </p>
+              </div>
             <p
               className="mt-4 text-5xl font-bold tracking-tight sm:text-6xl"
               aria-live="polite">

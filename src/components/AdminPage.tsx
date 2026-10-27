@@ -6,6 +6,13 @@ import {
   VisitorStats,
   DailyStat,
 } from "../firebase/visitorService";
+import VisitorAnalyticsChart from "./VisitorAnalyticsChart";
+import {
+  fillDailyStats,
+  getPeakDays,
+  getPresetDateRange,
+  DateRangePreset,
+} from "../visitorAnalytics.mjs";
 
 interface Props {
   onClose: () => void;
@@ -22,8 +29,18 @@ const AdminPage: React.FC<Props> = ({ onClose, isDark }) => {
   const [daily, setDaily] = useState<DailyStat[]>([]);
   const [loadingStats, setLoadingStats] = useState(false);
   const [statsError, setStatsError] = useState("");
+  const [rangeDefaults] = useState(() => getPresetDateRange("month"));
+  const [rangeMode, setRangeMode] = useState<DateRangePreset | "custom">(
+    "month",
+  );
+  const [dateRange, setDateRange] = useState(rangeDefaults);
+  const [customStartDate, setCustomStartDate] = useState(rangeDefaults.startDate);
+  const [customEndDate, setCustomEndDate] = useState(rangeDefaults.endDate);
+  const [rangeError, setRangeError] = useState("");
+  const [loadingDaily, setLoadingDaily] = useState(false);
+  const [dailyError, setDailyError] = useState("");
 
-  // Load stats after successful auth
+  // Lifetime totals do not change with the selected chart range.
   useEffect(() => {
     if (!authed) return;
     let cancelled = false;
@@ -31,18 +48,12 @@ const AdminPage: React.FC<Props> = ({ onClose, isDark }) => {
       setLoadingStats(true);
       setStatsError("");
       try {
-        const [globalStats, dailyStats] = await Promise.all([
-          fetchGlobalStats(),
-          fetchDailyStats(30),
-        ]);
-        if (!cancelled) {
-          setStats(globalStats);
-          setDaily(dailyStats);
-        }
+        const globalStats = await fetchGlobalStats();
+        if (!cancelled) setStats(globalStats);
       } catch (err) {
         if (!cancelled) {
           setStatsError(
-            err instanceof Error ? err.message : "Failed to load stats",
+            err instanceof Error ? err.message : "Failed to load lifetime stats",
           );
         }
       } finally {
@@ -54,6 +65,39 @@ const AdminPage: React.FC<Props> = ({ onClose, isDark }) => {
       cancelled = true;
     };
   }, [authed]);
+
+  // Fetch only the selected date range and ignore stale responses.
+  useEffect(() => {
+    if (!authed) return;
+    let cancelled = false;
+    const load = async () => {
+      setLoadingDaily(true);
+      setDailyError("");
+      try {
+        const records = await fetchDailyStats(
+          dateRange.startDate,
+          dateRange.endDate,
+        );
+        if (!cancelled) {
+          setDaily(
+            fillDailyStats(dateRange.startDate, dateRange.endDate, records),
+          );
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setDailyError(
+            err instanceof Error ? err.message : "Failed to load daily analytics",
+          );
+        }
+      } finally {
+        if (!cancelled) setLoadingDaily(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [authed, dateRange.startDate, dateRange.endDate]);
 
   // Close on Escape
   useEffect(() => {
@@ -82,11 +126,54 @@ const AdminPage: React.FC<Props> = ({ onClose, isDark }) => {
     }
   };
 
+  const handlePresetChange = (preset: DateRangePreset) => {
+    setRangeMode(preset);
+    setDateRange(getPresetDateRange(preset));
+    setRangeError("");
+  };
+
+  const handleCustomSelect = () => {
+    setRangeMode("custom");
+    setCustomStartDate(dateRange.startDate);
+    setCustomEndDate(dateRange.endDate);
+    setRangeError("");
+  };
+
+  const handleCustomApply = () => {
+    if (!customStartDate || !customEndDate) {
+      setRangeError("Choose both a start date and an end date.");
+      return;
+    }
+    if (customStartDate > customEndDate) {
+      setRangeError("The start date must be on or before the end date.");
+      return;
+    }
+    if (customEndDate > rangeDefaults.endDate) {
+      setRangeError("The end date cannot be in the future.");
+      return;
+    }
+
+    setDateRange({
+      startDate: customStartDate,
+      endDate: customEndDate,
+    });
+    setRangeError("");
+  };
+
   const cardBg = isDark ? "bg-dark-primary" : "bg-light-primary";
   const textColor = isDark ? "text-dark-content" : "text-light-content";
   const inputBg = isDark ? "bg-dark-secondary" : "bg-light-secondary";
-
-  const maxDailyVisits = Math.max(1, ...daily.map((d) => d.visits));
+  const borderColor = isDark ? "border-dark-content/10" : "border-light-content/10";
+  const filterButtonClass = (selected: boolean) =>
+    `rounded-lg border px-3 py-2 text-sm font-medium transition ${
+      selected
+        ? isDark
+          ? "border-dark-accent-1 bg-dark-accent-1 text-dark-primary"
+          : "border-light-accent-1 bg-light-accent-1 text-white"
+        : `${borderColor} hover:bg-current/5`
+    }`;
+  const peakDays = getPeakDays(daily);
+  const peakVisits = peakDays[0]?.visits ?? 0;
 
   return (
     <div
@@ -156,55 +243,126 @@ const AdminPage: React.FC<Props> = ({ onClose, isDark }) => {
                   <div className="text-3xl font-bold">
                     {stats.totalVisits.toLocaleString()}
                   </div>
-                  <div className="text-xs opacity-60 mt-1">Total Visits</div>
+                  <div className="text-xs opacity-60 mt-1">All-time Visits</div>
                 </div>
                 <div className={`rounded-xl p-4 ${inputBg}`}>
                   <div className="text-3xl font-bold">
                     {stats.uniqueVisitors.toLocaleString()}
                   </div>
                   <div className="text-xs opacity-60 mt-1">
-                    Unique Visitors
+                    All-time Unique Visitors
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Daily breakdown chart */}
-            {!loadingStats && daily.length > 0 && (
-              <div>
-                <h2 className="text-sm font-semibold mb-3 opacity-70">
-                  Last {daily.length} Days
-                </h2>
-                <div className="flex flex-col gap-1">
-                  {daily.map((d) => (
-                    <div key={d.date} className="flex items-center gap-2 text-xs">
-                      <span className="w-24 opacity-60 shrink-0">{d.date}</span>
-                      <div className={`flex-1 rounded ${inputBg} overflow-hidden`}>
-                        <div
-                          className={`h-5 rounded ${
-                            isDark ? "bg-dark-accent-1" : "bg-light-accent-1"
-                          }`}
-                          style={{
-                            width: `${(d.visits / maxDailyVisits) * 100}%`,
-                            minWidth: d.visits > 0 ? "8px" : "0",
-                          }}
-                          title={`${d.visits} visits (${d.uniqueVisitors} unique)`}
-                        />
-                      </div>
-                      <span className="w-20 text-right shrink-0">
-                        {d.visits} <span className="opacity-40">/ {d.uniqueVisitors}</span>
-                      </span>
-                    </div>
-                  ))}
+            <section className="flex flex-col gap-4" aria-label="Daily visitor analytics">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-sm font-semibold">Daily traffic</h2>
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Date range">
+                  <button
+                    type="button"
+                    aria-pressed={rangeMode === "week"}
+                    onClick={() => handlePresetChange("week")}
+                    className={filterButtonClass(rangeMode === "week")}>
+                    Last week
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={rangeMode === "month"}
+                    onClick={() => handlePresetChange("month")}
+                    className={filterButtonClass(rangeMode === "month")}>
+                    Last 30 days
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={rangeMode === "custom"}
+                    onClick={handleCustomSelect}
+                    className={filterButtonClass(rangeMode === "custom")}>
+                    Custom
+                  </button>
                 </div>
               </div>
-            )}
 
-            {!loadingStats && daily.length === 0 && stats && (
-              <div className="opacity-50 text-sm text-center py-4">
-                No daily breakdown data yet.
+              {rangeMode === "custom" && (
+                <div className={`flex flex-wrap items-end gap-3 rounded-xl p-3 ${inputBg}`}>
+                  <label className="flex flex-col gap-1 text-xs opacity-80">
+                    <span>Start date</span>
+                    <input
+                      type="date"
+                      aria-label="Start date"
+                      max={rangeDefaults.endDate}
+                      value={customStartDate}
+                      onChange={(event) => {
+                        setCustomStartDate(event.target.value);
+                        setRangeError("");
+                      }}
+                      className={`rounded-lg px-2 py-2 text-sm outline-none ${inputBg}`}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1 text-xs opacity-80">
+                    <span>End date</span>
+                    <input
+                      type="date"
+                      aria-label="End date"
+                      max={rangeDefaults.endDate}
+                      value={customEndDate}
+                      onChange={(event) => {
+                        setCustomEndDate(event.target.value);
+                        setRangeError("");
+                      }}
+                      className={`rounded-lg px-2 py-2 text-sm outline-none ${inputBg}`}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleCustomApply}
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold ${
+                      isDark
+                        ? "bg-dark-accent-1 text-dark-primary"
+                        : "bg-light-accent-1 text-white"
+                    }`}>
+                    Apply range
+                  </button>
+                </div>
+              )}
+
+              {rangeError && (
+                <p className="text-sm text-red-400" role="alert">
+                  {rangeError}
+                </p>
+              )}
+              {dailyError && (
+                <p className="text-sm text-red-400" role="alert">
+                  {dailyError}
+                </p>
+              )}
+
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                {!loadingDaily && !dailyError && (
+                  <p className="text-sm font-semibold" aria-live="polite">
+                    {peakVisits > 0
+                      ? `Peak traffic: ${peakDays.map((day) => day.date).join(", ")} · ${peakVisits.toLocaleString()} visits`
+                      : "No visits recorded in this range."}
+                  </p>
+                )}
+                <p className="text-xs opacity-60" aria-live="polite">
+                  {dateRange.startDate} – {dateRange.endDate}
+                </p>
               </div>
-            )}
+
+              {loadingDaily ? (
+                <p className="py-12 text-center text-sm opacity-60" role="status">
+                  Loading daily analytics…
+                </p>
+              ) : dailyError ? null : (
+                <VisitorAnalyticsChart
+                  data={daily}
+                  peakDates={peakDays.map((day) => day.date)}
+                  isDark={isDark}
+                />
+              )}
+            </section>
           </div>
         )}
       </div>

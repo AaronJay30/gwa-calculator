@@ -23,9 +23,10 @@ export default {
         'light-primary': '#FFFFFF',
         'light-secondary': '#EEF1F5',
         'light-accent': {
-          1: '#3158C8',
-          2: '#294BAA',
+          1: '#4F73C4',
+          2: '#3F62B4',
         },
+        'light-accent-text': '#FFFFFF',
       
         'danger': {
           1: '#CA0000',

@@ -212,7 +212,7 @@ function App() {
 							className={`mt-8 rounded-lg px-3 py-2 text-lg duration-300 ${
 								isDark
 									? "bg-dark-accent-1 text-light-content hover:bg-dark-accent-2"
-									: "bg-light-accent-1 text-white hover:bg-light-accent-2"
+									: "bg-light-accent-1 text-light-accent-text hover:bg-light-accent-2"
 							}`}
 							onClick={handleAddClick}>
 							Add

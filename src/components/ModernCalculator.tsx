@@ -56,12 +56,12 @@ const ModernCalculator: React.FC<Props> = ({
     : "border border-light-content/10 text-light-content hover:bg-light-content/5";
   const primaryButton = isDark
     ? "bg-dark-accent-1 text-light-content hover:bg-dark-accent-2"
-    : "bg-light-accent-1 text-white hover:bg-light-accent-2";
+    : "bg-light-accent-1 text-light-accent-text hover:bg-light-accent-2";
   const destructiveStyle =
     "bg-danger-1 text-dark-content hover:bg-danger-2 focus-visible:outline-danger-2";
   const focusRing = isDark
     ? "focus-visible:ring-dark-accent-1"
-    : "focus-visible:ring-light-accent-1";
+    : "focus-visible:ring-light-content";
   const gradeIndex = VALID_GRADES.indexOf(grade);
   const resultCardSvg = summary.academicStanding
     ? createShareResultSvg(summary, isDark)
@@ -138,7 +138,7 @@ const ModernCalculator: React.FC<Props> = ({
                   className={`flex h-10 w-10 items-center justify-center rounded-lg transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
                     isDark
                       ? "focus-visible:outline-dark-accent-1"
-                      : "focus-visible:outline-light-accent-1"
+                      : "focus-visible:outline-light-content"
                   } ${primaryButton}`}>
                   <FaDownload aria-hidden="true" />
                 </button>
@@ -325,7 +325,7 @@ const ModernCalculator: React.FC<Props> = ({
           className={`mt-4 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-lg transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
             isDark
               ? "focus-visible:outline-dark-accent-1"
-              : "focus-visible:outline-light-accent-1"
+              : "focus-visible:outline-light-content"
           } ${primaryButton}`}>
           <FaPlus aria-hidden="true" />
           Add Subject
@@ -345,7 +345,7 @@ const ModernCalculator: React.FC<Props> = ({
               className={`rounded-lg px-3 py-2 text-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
                 isDark
                   ? "focus-visible:outline-dark-accent-1"
-                  : "focus-visible:outline-light-accent-1"
+                  : "focus-visible:outline-light-content"
               } ${secondaryButton}`}>
               Demo Data
             </button>

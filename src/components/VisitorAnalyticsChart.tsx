@@ -44,7 +44,7 @@ const VisitorAnalyticsChart: React.FC<Props> = ({
     : {
         grid: "#D8DEE8",
         axis: "#596678",
-        visits: "#3158C8",
+        visits: "#4F73C4",
         unique: "#C39A32",
         panel: "#FFFFFF",
         tooltip: "#F4F6F9",

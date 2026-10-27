@@ -19,10 +19,10 @@ const CalculatorModeSwitch: React.FC<Props> = ({
   const inactiveText = isDark ? "text-dark-content/60" : "text-light-content/60";
   const activeStyle = isDark
     ? "bg-dark-accent-1 text-light-content"
-    : "bg-light-accent-1 text-white";
+    : "bg-light-accent-1 text-light-accent-text";
   const focusStyle = isDark
     ? "focus-visible:outline-dark-accent-1"
-    : "focus-visible:outline-light-accent-1";
+    : "focus-visible:outline-light-content";
   const showHint = showNewModeHint && mode === "original";
   const hintColor = isDark ? "text-dark-content" : "text-light-content";
 

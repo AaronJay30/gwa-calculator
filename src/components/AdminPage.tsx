@@ -169,7 +169,7 @@ const AdminPage: React.FC<Props> = ({ onClose, isDark }) => {
       selected
         ? isDark
           ? "border-dark-accent-1 bg-dark-accent-1 text-dark-primary"
-          : "border-light-accent-1 bg-light-accent-1 text-white"
+          : "border-light-accent-1 bg-light-accent-1 text-light-accent-text"
         : `${borderColor} hover:bg-current/5`
     }`;
   const peakDays = getPeakDays(daily);
@@ -214,8 +214,10 @@ const AdminPage: React.FC<Props> = ({ onClose, isDark }) => {
               type="submit"
               disabled={!password || checking}
               className={`rounded-lg py-2 px-3 font-semibold disabled:opacity-40 ${
-                isDark ? "bg-dark-accent-1" : "bg-light-accent-1"
-              } text-white`}>
+                isDark
+                  ? "bg-dark-accent-1 text-white"
+                  : "bg-light-accent-1 text-light-accent-text"
+              }`}>
               {checking ? "Checking…" : "Unlock"}
             </button>
           </form>
@@ -320,7 +322,7 @@ const AdminPage: React.FC<Props> = ({ onClose, isDark }) => {
                     className={`rounded-lg px-3 py-2 text-sm font-semibold ${
                       isDark
                         ? "bg-dark-accent-1 text-dark-primary"
-                        : "bg-light-accent-1 text-white"
+                        : "bg-light-accent-1 text-light-accent-text"
                     }`}>
                     Apply range
                   </button>

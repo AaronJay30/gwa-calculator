@@ -16,7 +16,7 @@ const SupportModal: React.FC<Props> = ({ isDark, onClose }) => {
   const mutedStyle = isDark ? "text-dark-content/70" : "text-light-content/70";
   const accentStyle = isDark
     ? "bg-dark-accent-1 text-light-content hover:bg-dark-accent-2"
-    : "bg-light-accent-1 text-white hover:bg-light-accent-2";
+    : "bg-light-accent-1 text-light-accent-text hover:bg-light-accent-2";
 
   useEffect(() => {
     const previouslyFocused =

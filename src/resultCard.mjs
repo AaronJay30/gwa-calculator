@@ -16,7 +16,7 @@ const COLORS = {
     panel: "#FFFFFF",
     content: "#182230",
     muted: "#596678",
-    accent: "#3158C8",
+    accent: "#4F73C4",
     accentText: "#FFFFFF",
     divider: "#D8DEE8",
   },

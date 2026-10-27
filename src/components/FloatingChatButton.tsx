@@ -15,7 +15,9 @@ const FloatingChatButton: React.FC<Props> = ({ isDark }) => {
   });
 
   // Positioned above the existing footer link
-  const accent = isDark ? "bg-dark-accent-1" : "bg-light-accent-1";
+  const accent = isDark
+    ? "bg-dark-accent-1 text-white"
+    : "bg-light-accent-1 text-light-accent-text";
   const ringColor = isDark ? "ring-dark-background" : "ring-light-background";
   const tooltipBg = isDark ? "bg-dark-secondary" : "bg-light-secondary";
 
@@ -64,7 +66,7 @@ const FloatingChatButton: React.FC<Props> = ({ isDark }) => {
         onClick={handleOpen}
         aria-label="Open chat"
         data-testid="floating-chat-button"
-        className={`fixed bottom-16 right-4 z-40 w-14 h-14 rounded-full shadow-lg ${accent} text-white flex items-center justify-center text-2xl hover:scale-105 active:scale-95 transition-transform duration-200 ring-2 ${ringColor} ${showAnnouncement && !isOpen ? "animate-pulse" : ""}`}>
+        className={`fixed bottom-16 right-4 z-40 w-14 h-14 rounded-full shadow-lg ${accent} flex items-center justify-center text-2xl hover:scale-105 active:scale-95 transition-transform duration-200 ring-2 ${ringColor} ${showAnnouncement && !isOpen ? "animate-pulse" : ""}`}>
         {/* Chat bubble SVG icon */}
         <svg
           xmlns="http://www.w3.org/2000/svg"

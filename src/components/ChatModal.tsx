@@ -116,6 +116,7 @@ const ChatModal: React.FC<Props> = ({ isOpen, onClose, isDark }) => {
   const textColor = isDark ? "text-dark-content" : "text-light-content";
   const inputBg = isDark ? "bg-dark-secondary" : "bg-light-secondary";
   const accent = isDark ? "bg-dark-accent-1" : "bg-light-accent-1";
+  const accentText = isDark ? "text-white" : "text-light-accent-text";
 
   return (
     <div
@@ -191,7 +192,7 @@ const ChatModal: React.FC<Props> = ({ isOpen, onClose, isDark }) => {
                 type="button"
                 onClick={handleSaveName}
                 disabled={!draftName.trim()}
-                className={`rounded-lg py-2 px-3 font-semibold disabled:opacity-40 ${accent} text-white`}>
+                className={`rounded-lg py-2 px-3 font-semibold disabled:opacity-40 ${accent} ${accentText}`}>
                 Start chatting
               </button>
             </div>
@@ -222,7 +223,7 @@ const ChatModal: React.FC<Props> = ({ isOpen, onClose, isDark }) => {
                   {msg.user} · {formatTime(msg.createdAt)}
                 </span>
                 <div
-                  className={`rounded-2xl px-3 py-2 break-words whitespace-pre-wrap ${isMine ? `${accent} text-white` : inputBg}`}>
+                  className={`rounded-2xl px-3 py-2 break-words whitespace-pre-wrap ${isMine ? `${accent} ${accentText}` : inputBg}`}>
                   {msg.text}
                 </div>
               </div>
@@ -246,7 +247,7 @@ const ChatModal: React.FC<Props> = ({ isOpen, onClose, isDark }) => {
           <button
             type="submit"
             disabled={!draft.trim() || sending || !userName}
-            className={`rounded-lg px-4 py-2 font-semibold disabled:opacity-40 ${accent} text-white`}>
+            className={`rounded-lg px-4 py-2 font-semibold disabled:opacity-40 ${accent} ${accentText}`}>
             Send
           </button>
         </form>

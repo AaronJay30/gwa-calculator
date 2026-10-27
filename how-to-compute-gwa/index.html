@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en-PH">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Learn the GWA formula, calculate a weighted average from grades and units, and see a worked Philippine college example with GCalc." />
+    <link rel="canonical" href="https://aaronjay30.github.io/gwa-calculator/how-to-compute-gwa/" />
+    <meta name="theme-color" content="#1E2B4D" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="GCalc" />
+    <meta property="og:title" content="How to Compute GWA in the Philippines | GCalc" />
+    <meta property="og:description" content="A clear GWA formula, step-by-step calculation, and worked example for Philippine college students." />
+    <meta property="og:url" content="https://aaronjay30.github.io/gwa-calculator/how-to-compute-gwa/" />
+    <meta property="og:locale" content="en_PH" />
+    <meta name="twitter:card" content="summary" />
+    <title>How to Compute GWA in the Philippines | GCalc</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Outfit", "Segoe UI", Arial, sans-serif;
+        color: #182230;
+        background: #f4f6f9;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; line-height: 1.65; }
+      a { color: #365ba6; }
+      a:focus-visible { outline: 3px solid #c39a32; outline-offset: 3px; }
+      .site-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem max(1.25rem, calc((100vw - 920px) / 2));
+        background: #1e2b4d;
+        color: #dae2f1;
+      }
+      .brand { color: inherit; font-size: 1.1rem; font-weight: 700; text-decoration: none; }
+      .header-link { color: inherit; font-size: .9rem; }
+      main { width: min(100% - 2rem, 760px); margin: 3rem auto; }
+      .breadcrumb { margin: 0 0 1.25rem; font-size: .9rem; }
+      article { background: #fff; border-radius: 1rem; padding: clamp(1.25rem, 5vw, 3rem); box-shadow: 0 10px 34px rgb(24 34 48 / 7%); }
+      h1, h2 { color: #182230; line-height: 1.2; }
+      h1 { margin: 0 0 .75rem; font-size: clamp(2rem, 6vw, 3rem); letter-spacing: -.035em; }
+      h2 { margin: 2.25rem 0 .7rem; font-size: 1.35rem; }
+      p, li { max-width: 70ch; }
+      .lead { margin: 0 0 1.5rem; color: #4a5870; font-size: 1.08rem; }
+      .formula { margin: 1.5rem 0; padding: 1.1rem 1.25rem; border-left: 4px solid #c39a32; border-radius: .5rem; background: #f4f6f9; }
+      .formula p { margin: 0; font-size: 1.15rem; font-weight: 700; }
+      .formula code { display: block; margin-top: .35rem; color: #4a5870; font-family: inherit; }
+      ol, ul { padding-left: 1.35rem; }
+      li + li { margin-top: .5rem; }
+      .table-wrap { overflow-x: auto; margin: 1rem 0; }
+      table { width: 100%; border-collapse: collapse; text-align: left; font-variant-numeric: tabular-nums; }
+      th, td { padding: .7rem .6rem; border-bottom: 1px solid #e1e6ee; }
+      th { color: #4a5870; font-size: .88rem; }
+      .result { margin: 1rem 0 0; font-size: 1.15rem; font-weight: 700; }
+      .notice { padding: 1rem 1.15rem; border-radius: .6rem; background: #eef1f5; color: #354257; }
+      .cta { display: inline-block; margin-top: 1rem; padding: .7rem 1rem; border-radius: .5rem; background: #4f73c4; color: #fff; font-weight: 600; text-decoration: none; }
+      footer { padding: 1.5rem 1rem 2.5rem; color: #5c6880; text-align: center; font-size: .9rem; }
+
+      @media (max-width: 520px) {
+        .site-header { align-items: flex-start; flex-direction: column; }
+        main { width: min(100% - 1rem, 760px); margin: 1rem auto; }
+        th, td { padding: .6rem .4rem; font-size: .9rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="../" aria-label="GCalc GWA Calculator home">GCalc · GWA Calculator</a>
+      <a class="header-link" href="../">Open the calculator</a>
+    </header>
+
+    <main>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../">GWA Calculator</a> / <span aria-current="page">How to compute GWA</span>
+      </nav>
+
+      <article>
+        <h1>How to Compute GWA in the Philippines</h1>
+        <p class="lead">
+          General Weighted Average (GWA) accounts for the units attached to each subject.
+          Multiply every included grade by its units, add the grade points, then divide by
+          the total included units.
+        </p>
+
+        <div class="formula" aria-label="GWA formula">
+          <p>GWA = total grade points ÷ total included units</p>
+          <code>GWA = Σ(grade × units) ÷ Σ(units)</code>
+        </div>
+
+        <h2>Calculate your GWA step by step</h2>
+        <ol>
+          <li>List each subject's final numerical grade and corresponding units.</li>
+          <li>Follow your school's rules about which subjects count toward GWA.</li>
+          <li>Multiply each included grade by its units to get that subject's grade points.</li>
+          <li>Add the grade points and add the included units separately.</li>
+          <li>Divide total grade points by total included units.</li>
+        </ol>
+
+        <h2>Worked example</h2>
+        <p>Suppose these two subjects count toward your GWA:</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Subject</th><th scope="col">Grade</th><th scope="col">Units</th><th scope="col">Grade × units</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Mathematics</th><td>1.25</td><td>3</td><td>3.75</td></tr>
+              <tr><th scope="row">Biology</th><td>1.50</td><td>4</td><td>6.00</td></tr>
+              <tr><th scope="row">Total</th><td>—</td><td>7</td><td>9.75</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="result">GWA = 9.75 ÷ 7 = 1.3929</p>
+        <p>On grading scales where 1.00 is the highest mark, a lower GWA is generally stronger. Check your institution's grading scale.</p>
+
+        <h2>Use the GCalc GWA calculator</h2>
+        <ol>
+          <li>Open the calculator and enter a grade and units for each subject.</li>
+          <li>Add the subjects that your institution includes in the calculation.</li>
+          <li>Read the GWA and total units shown in the result.</li>
+        </ol>
+        <p>
+          GCalc also has an Academic Scholarship view and a cumulative Latin Honors view.
+          These features estimate standing from the grades and units entered; they do not
+          replace an official evaluation.
+        </p>
+
+        <h2>Do all subjects count toward GWA?</h2>
+        <p>
+          Not always. Rules for PE, NSTP, repeated subjects, incomplete grades, and other
+          courses differ among schools and programs. Include or exclude a course according
+          to your current student handbook or registrar's guidance.
+        </p>
+
+        <h2>Is a GWA estimate an official Latin Honors result?</h2>
+        <p class="notice">
+          No. Latin Honors cutoffs and eligibility requirements vary by institution and may
+          include rules beyond the cumulative average. Check your school's current handbook
+          or ask the registrar before making an academic decision.
+        </p>
+
+        <a class="cta" href="../">Calculate your GWA with GCalc</a>
+      </article>
+    </main>
+
+    <footer>GCalc is an independent study tool and is not an official university record.</footer>
+  </body>
+</html>

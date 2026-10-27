@@ -235,7 +235,7 @@ function App() {
 							</p>
 						)}
 					</div>
-					<div className="flex shrink-0 flex-col items-end gap-2">
+					<div className="flex shrink-0 flex-col items-end gap-2" data-nosnippet="">
 						<CalculatorModeSwitch
 							mode={mode}
 							onChange={(nextMode) => {
@@ -248,26 +248,30 @@ function App() {
 						<ThemeSwitch setIsDark={setIsDark} isDark={isDark} />
 					</div>
 				</div>
-				<SaveCopyControls
-					isDark={isDark}
-					scholarshipCourses={inputList}
-					latinHonorsCourses={latinHonorsCourses}
-					storageMessage={storageMessage}
-					onImport={(data) => {
-						setInputList(data.scholarshipCourses);
-						setLatinHonorsCourses(data.latinHonorsCourses);
-						setStorageMessage("");
-					}}
-				/>
-				{mode === "modern" && (
-					<ComputationModeSwitch
-						mode={computationMode}
-						onChange={setComputationMode}
+				<div data-nosnippet="">
+					<SaveCopyControls
 						isDark={isDark}
+						scholarshipCourses={inputList}
+						latinHonorsCourses={latinHonorsCourses}
+						storageMessage={storageMessage}
+						onImport={(data) => {
+							setInputList(data.scholarshipCourses);
+							setLatinHonorsCourses(data.latinHonorsCourses);
+							setStorageMessage("");
+						}}
 					/>
+				</div>
+				{mode === "modern" && (
+					<div data-nosnippet="">
+						<ComputationModeSwitch
+							mode={computationMode}
+							onChange={setComputationMode}
+							isDark={isDark}
+						/>
+					</div>
 				)}
 
-				<div className={computationMode === "scholarship" && mode === "modern" ? "" : "hidden"}>
+				<div data-nosnippet="" className={computationMode === "scholarship" && mode === "modern" ? "" : "hidden"}>
 					<ModernCalculator
 						courses={inputList}
 						summary={summary}
@@ -280,7 +284,7 @@ function App() {
 					/>
 				</div>
 
-				<div className={mode === "original" ? "flex flex-col gap-8" : "hidden"}>
+				<div data-nosnippet="" className={mode === "original" ? "flex flex-col gap-8" : "hidden"}>
 					<div
 						className={`w-full rounded-xl p-10 duration-300 ${
 							isDark ? "bg-dark-primary" : "bg-light-primary"
@@ -329,7 +333,7 @@ function App() {
 					</div>
 				</div>
 
-				<div className={mode === "modern" && computationMode === "latin-honors" ? "" : "hidden"}>
+				<div data-nosnippet="" className={mode === "modern" && computationMode === "latin-honors" ? "" : "hidden"}>
 					<LatinHonorsCalculator
 						isDark={isDark}
 						courses={latinHonorsCourses}
@@ -355,13 +359,24 @@ function App() {
 						? "mx-auto w-full sm:w-1/2 md:w-3/4 lg:w-1/2 px-4 py-4 text-right"
 						: "fixed bottom-4 right-4"
 				}`}>
-			<button
-				type="button"
-				onClick={() => setShowSupport(true)}
-				aria-haspopup="dialog"
-				className="rounded-sm transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-					© Aaron Jay Gabato. Buy me a Coffee! ☕
-			</button>
+				<span>
+					GCalc is created and maintained by{" "}
+					<a
+						href="https://www.facebook.com/gabato.aaron30"
+						target="_blank"
+						rel="noreferrer"
+						className="underline underline-offset-2">
+						Aaron Jay Gabato
+					</a>
+					. {" "}
+				</span>
+				<button
+					type="button"
+					onClick={() => setShowSupport(true)}
+					aria-haspopup="dialog"
+					className="rounded-sm transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+					Buy me a Coffee! ☕
+				</button>
 			</footer>
 
 			<FloatingChatButton isDark={isDark} />

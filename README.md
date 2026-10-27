@@ -80,6 +80,16 @@ deleted manually. The `visits` marker collection can be deleted separately
 without deleting the aggregate totals. Firebase continues to store chat
 messages.
 
+## Search visibility
+
+The calculator page has a canonical URL and descriptive search/social metadata.
+The standalone guide at `public/how-to-compute-gwa/index.html` provides a
+static, crawlable explanation of the GWA formula, and `public/sitemap.xml`
+lists both public pages. After deployment, verify the GitHub Pages URL in
+Google Search Console and submit
+`https://aaronjay30.github.io/gwa-calculator/sitemap.xml`. A sitemap helps
+Google discover URLs but does not guarantee indexing or a particular ranking.
+
 ## Development
 
 ```bash

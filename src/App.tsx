@@ -27,6 +27,7 @@ import { initializeGoogleAnalytics } from "./googleAnalytics";
 
 const AdminPage = lazy(() => import("./components/AdminPage"));
 const EMPTY_SCHOLARSHIP_COURSE: GWA = { id: 0, grades: 0, units: 0 };
+const GWA_GUIDE_URL = `${import.meta.env.BASE_URL.replace(/\/+$/, "")}/how-to-compute-gwa/`;
 
 const readInitialCalculatorState = () => {
 	try {
@@ -337,6 +338,13 @@ function App() {
 						onPeriodChange={setLatinPeriod}
 					/>
 				</div>
+				<a
+					href={GWA_GUIDE_URL}
+					className={`text-center text-sm underline underline-offset-4 transition-opacity hover:opacity-80 ${
+						isDark ? "text-dark-content/70" : "text-light-content/70"
+					}`}>
+					How to compute GWA in the Philippines
+				</a>
 			</div>
 
 			<footer

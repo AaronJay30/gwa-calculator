@@ -96,11 +96,13 @@ test("[AC-MODE1026-E1] grade stepping follows the existing allowed grade values"
   assert.equal(stepGrade(5, 1), 5);
 });
 
-test("[AC-MODE1026-E1] unit stepping stays between one and ten", () => {
-  const { stepUnit } = getCalculator();
+test("[AC-MODE1026-E1] unit stepping stays between one and ninety-nine", () => {
+  const { MAX_UNITS, stepUnit } = getCalculator();
 
+  assert.equal(MAX_UNITS, 99);
   assert.equal(stepUnit(1, -1), 1);
   assert.equal(stepUnit(3, -1), 2);
   assert.equal(stepUnit(3, 1), 4);
-  assert.equal(stepUnit(10, 1), 10);
+  assert.equal(stepUnit(99, 1), 99);
+  assert.equal(stepUnit(10, 1), 11);
 });

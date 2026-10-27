@@ -20,6 +20,7 @@ export interface CalculatorSummary {
 }
 
 export const VALID_GRADES: readonly number[];
+export const MAX_UNITS: 99;
 export function getAcademicStanding(
   gwa: number,
   totalUnits: number,

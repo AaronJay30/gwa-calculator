@@ -1,6 +1,7 @@
 export const VALID_GRADES = [
   1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 4, 5,
 ];
+export const MAX_UNITS = 99;
 
 export const getAcademicStanding = (gwa, totalUnits) => {
   if (totalUnits <= 10) return "";
@@ -48,4 +49,4 @@ export const stepGrade = (grade, direction) => {
 };
 
 export const stepUnit = (units, direction) =>
-  Math.max(1, Math.min(10, units + direction));
+  Math.max(1, Math.min(MAX_UNITS, units + direction));

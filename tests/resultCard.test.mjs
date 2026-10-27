@@ -23,10 +23,58 @@ test("[AC-SCHOLAR1027-F2] share card image includes award, GWA, totals, and them
   assert.match(svg, />1\.5100</);
   assert.match(svg, />8</);
   assert.match(svg, />40</);
-  assert.match(svg, />60\.5000</);
+  assert.match(svg, />60\.50</);
   assert.match(svg, /#1E2B4D/);
   assert.match(svg, /#C39A32/);
   assert.match(svg, /<circle cx="1080" cy="70" r="170"/);
+});
+
+test("[AC-LATINHONORS-CARD1] Latin Honor card uses the share-card palette and cumulative totals", () => {
+  assert.ok(resultCardModule, "result card helpers are missing");
+  const summary = {
+    latinHonor: "Magna Cum Laude",
+    gwa: 1.2345,
+    courseCount: 34,
+    totalUnits: 120,
+    totalPoints: 148.14,
+  };
+  const svg = resultCardModule.createLatinHonorResultSvg(summary, true);
+
+  assert.match(svg, /width="1200" height="630"/);
+  assert.match(svg, /LATIN HONOR ACHIEVEMENT/);
+  assert.match(svg, /Magna Cum Laude/);
+  assert.match(svg, />1\.2345</);
+  assert.match(svg, />34</);
+  assert.match(svg, />120</);
+  assert.match(svg, />148\.14</);
+  assert.match(svg, /#1E2B4D/);
+  assert.match(svg, /#C39A32/);
+  assert.throws(
+    () => resultCardModule.createLatinHonorResultSvg({ ...summary, latinHonor: "" }, true),
+    /Latin Honor/i,
+  );
+  assert.equal(
+    resultCardModule.getLatinHonorCardFilename("Summa Cum Laude", 1.2),
+    "summa-cum-laude-gwa-1-20.png",
+  );
+});
+
+test("[AC-LIGHTTHEME-F1] downloaded light-mode result cards use the pastel blue award color", () => {
+  assert.ok(resultCardModule, "result card helpers are missing");
+  const scholarshipSvg = resultCardModule.createShareResultSvg(summary, false);
+  const latinHonorSvg = resultCardModule.createLatinHonorResultSvg({
+    latinHonor: "Cum Laude",
+    gwa: 1.6029,
+    courseCount: 17,
+    totalUnits: 51,
+    totalPoints: 81.75,
+  }, false);
+
+  for (const svg of [scholarshipSvg, latinHonorSvg]) {
+    assert.match(svg, /#D9E6FF/);
+    assert.match(svg, /#182230/);
+    assert.match(svg, /#F4F6F9/);
+  }
 });
 
 test("[AC-SCHOLAR1027-E2] result card XML escapes award text and requires a standing", () => {
@@ -35,7 +83,7 @@ test("[AC-SCHOLAR1027-E2] result card XML escapes award text and requires a stan
   const svg = resultCardModule.createShareResultSvg(deanSummary, false);
 
   assert.match(svg, /Dean&apos;s Lister/);
-  assert.match(svg, /#D9E2FC/);
+  assert.match(svg, /#F4F6F9/);
   assert.throws(
     () =>
       resultCardModule.createShareResultSvg(

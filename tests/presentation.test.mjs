@@ -23,6 +23,12 @@ const { default: ModernCalculator } = await vite.ssrLoadModule(
 const congratulationsModule = await vite
   .ssrLoadModule("/src/components/CongratulationsModal.tsx")
   .catch(() => null);
+const latinHonorsModalModule = await vite
+  .ssrLoadModule("/src/components/LatinHonorsSummaryModal.tsx")
+  .catch(() => null);
+const latinHonorsCalculatorModule = await vite
+  .ssrLoadModule("/src/components/LatinHonorsCalculator.tsx")
+  .catch(() => null);
 
 test("[AC-MODE1026-F7] layout switch uses accessible icons without visible text", () => {
   const markup = renderToStaticMarkup(
@@ -204,6 +210,26 @@ test("[AC-SCHOLAR1027-F3] congratulations opens only after the image download st
   );
 });
 
+test("[AC-LATINHONORS-UI9] Latin Honor image download opens the congratulations modal after success", async () => {
+  const latinHonorsSource = await readFile(
+    new URL("../src/components/LatinHonorsCalculator.tsx", import.meta.url),
+    "utf8",
+  );
+  const handler = latinHonorsSource.slice(
+    latinHonorsSource.indexOf("const handleDownloadResult"),
+    latinHonorsSource.indexOf("const handleAddCourse"),
+  );
+
+  assert.ok(handler.indexOf("downloadPngBlob(") >= 0);
+  assert.ok(
+    handler.indexOf("setShowCongratulations(true)") >
+      handler.indexOf("downloadPngBlob("),
+  );
+  assert.match(latinHonorsSource, /<CongratulationsModal/);
+  assert.match(latinHonorsSource, /academicStanding=\{overallSummary\.latinHonor\}/);
+  assert.match(latinHonorsSource, /showCongratulations &&/);
+});
+
 test("[AC-SCHOLAR1027-F6] achievement remark animates and confetti loops with reduced-motion support", async () => {
   const modernSource = await readFile(
     new URL("../src/components/ModernCalculator.tsx", import.meta.url),
@@ -229,6 +255,162 @@ test("[AC-SCHOLAR1027-F7] mobile header keeps the title inline with its controls
   );
 
   assert.match(appSource, /flex flex-row items-start justify-between gap-2/);
+});
+
+test("[AC-LATINHONORS-UI1] computation selector is rendered only in Modern layout", async () => {
+  const appSource = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
+
+  assert.match(appSource, /mode === "modern" &&\s*\(\s*<ComputationModeSwitch/);
+  assert.match(appSource, /mode === "original" \? "flex flex-col gap-8" : "hidden"/);
+  assert.match(appSource, /mode === "modern" && computationMode === "latin-honors"/);
+});
+
+test("[AC-LATINHONORS-UI2] Latin Honors grade entry uses previous and next buttons", async () => {
+  const componentSource = await readFile(
+    new URL("../src/components/LatinHonorsCalculator.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(componentSource, /label="Decrease grade"/);
+  assert.match(componentSource, /label="Increase grade"/);
+  assert.doesNotMatch(componentSource, /<select[\s\S]*?id="latin-grade"/);
+});
+
+test("[AC-LATINHONORS-UI3] summary modal shows collapsible terms and saved grade details", () => {
+  assert.ok(latinHonorsModalModule, "Latin Honors summary modal is missing");
+  const markup = renderToStaticMarkup(
+    React.createElement(latinHonorsModalModule.default, {
+      isDark: true,
+      courses: [
+        {
+          id: 1,
+          name: "Mathematics",
+          grades: 1.25,
+          units: 3,
+          year: 1,
+          term: "first",
+          includeInLatinHonors: true,
+        },
+        {
+          id: 2,
+          name: "PE",
+          grades: 1.5,
+          units: 2,
+          year: 1,
+          term: "mid",
+          includeInLatinHonors: false,
+        },
+      ],
+      onClose: () => {},
+    }),
+  );
+
+  assert.match(markup, /role="dialog"/);
+  assert.match(markup, /aria-modal="true"/);
+  assert.match(markup, /<details open=""/);
+  assert.match(markup, /First Sem/);
+  assert.match(markup, /Mid Sem/);
+  assert.match(markup, /Mathematics/);
+  assert.match(markup, /1\.25/);
+  assert.match(markup, /PE/);
+  assert.match(markup, /Excluded from Latin Honors GWA/);
+  assert.match(markup, /Download PDF/);
+  assert.match(markup, /Download Excel/);
+});
+
+test("[AC-LATINHONORS-UI5] Latin Honor result and semester scholarship use award badges and a labeled image download", async () => {
+  const componentSource = await readFile(
+    new URL("../src/components/LatinHonorsCalculator.tsx", import.meta.url),
+    "utf8",
+  );
+  const styles = await readFile(new URL("../src/App.css", import.meta.url), "utf8");
+
+  assert.match(componentSource, /latin-honor-remark/);
+  assert.match(componentSource, /bg-dark-accent-1 text-dark-primary/);
+  assert.match(componentSource, /bg-light-accent-1 text-light-accent-text/);
+  assert.match(componentSource, /Download \$\{overallSummary\.latinHonor\} Latin Honor result card/);
+  assert.match(componentSource, /rounded-full px-3 py-1\.5 text-right text-xs font-bold/);
+  assert.match(styles, /\.latin-honor-remark[\s\S]*?animation:/);
+  assert.match(styles, /\.latin-honor-remark,[\s\S]*?animation: none/);
+});
+
+test("[AC-LATINHONORS-UI7] Latin Honor image download appears only for a qualifying cumulative result", () => {
+  assert.ok(latinHonorsCalculatorModule, "Latin Honors calculator is missing");
+  const previousWindow = globalThis.window;
+  const renderWithSavedCourses = (courses) => {
+    globalThis.window = { localStorage: { getItem: () => JSON.stringify(courses) } };
+    return renderToStaticMarkup(
+      React.createElement(latinHonorsCalculatorModule.default, { isDark: true }),
+    );
+  };
+
+  try {
+    const emptyMarkup = renderWithSavedCourses([]);
+    assert.doesNotMatch(emptyMarkup, /Download .* Latin Honor result card/);
+
+    const qualifyingMarkup = renderWithSavedCourses([
+      { id: 1, name: "Mathematics", grades: 1.25, units: 12, year: 1, term: "first", includeInLatinHonors: true },
+    ]);
+    assert.match(qualifyingMarkup, /Download Magna Cum Laude Latin Honor result card/);
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
+test("[AC-LATINHONORS-UI8] Latin Honor card matches the scholarship summary layout", () => {
+  assert.ok(latinHonorsCalculatorModule, "Latin Honors calculator is missing");
+  const previousWindow = globalThis.window;
+  globalThis.window = {
+    localStorage: {
+      getItem: () => JSON.stringify([
+        { id: 1, name: "Mathematics", grades: 1.25, units: 12, year: 1, term: "first", includeInLatinHonors: true },
+      ]),
+    },
+  };
+
+  try {
+    const markup = renderToStaticMarkup(
+      React.createElement(latinHonorsCalculatorModule.default, { isDark: true }),
+    );
+    assert.match(markup, /<h2 class="text-lg font-bold">Latin Honor<\/h2>/);
+    assert.match(markup, /aria-label="Open Latin Honors summary"/);
+    assert.match(markup, /aria-label="Download Magna Cum Laude Latin Honor result card"/);
+    assert.match(markup, /LATIN HONOR ACHIEVEMENT/);
+    assert.match(markup, /GENERAL WEIGHTED AVERAGE/);
+    assert.match(markup, /15\.00/);
+    assert.doesNotMatch(markup, /15\.0000/);
+    assert.doesNotMatch(markup, /GWA estimate using the ranges provided/);
+    assert.doesNotMatch(markup, />Download result</);
+    assert.doesNotMatch(markup, />Summary<\/button>/);
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
+test("[AC-LATINHONORS-UI6] summary exports are lazy-loaded and errors remain visible", async () => {
+  const modalSource = await readFile(
+    new URL("../src/components/LatinHonorsSummaryModal.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(modalSource, /import\("\.\.\/latinHonorsPdf\.mjs"\)/);
+  assert.match(modalSource, /import\("\.\.\/latinHonorsWorkbook\.mjs"\)/);
+  assert.match(modalSource, /disabled=\{courses\.length === 0 \|\| Boolean\(exporting\)\}/);
+  assert.match(modalSource, /role="alert"/);
+  assert.match(modalSource, /event\.preventDefault\(\)/);
+  assert.match(modalSource, /type="button"/);
+});
+
+test("[AC-LATINHONORS-UI4] closed collapsible sections remain reachable in the modal focus order", async () => {
+  const modalSource = await readFile(
+    new URL("../src/components/LatinHonorsSummaryModal.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(modalSource, /item\.tagName !== "SUMMARY" \|\| item\.parentElement !== closedDetails/);
+  assert.match(modalSource, /!closedDetails\.parentElement\?\.closest\("details:not\(\[open\]\)"\)/);
 });
 
 test("[AC-MODE1026-F9] app keeps Original width and stacks mode control above theme", async () => {

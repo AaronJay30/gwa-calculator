@@ -41,7 +41,7 @@ test("[AC-MODE1026-F6] Modern controls use colors from the configured theme", as
   );
   assert.ok(
     result.css.includes(".bg-light-accent-1 {") &&
-      modernSource.includes("bg-light-accent-1 text-dark-content"),
+      modernSource.includes("bg-light-accent-1 text-light-accent-text"),
     "Light primary action does not use the Original theme accent",
   );
   assert.ok(
@@ -64,7 +64,45 @@ test("[AC-MODE1026-F6] Modern controls use colors from the configured theme", as
 
   const colors = tailwindConfig.theme.colors;
   assert.ok(
+    contrastRatio(colors["light-accent-text"], colors["light-accent"][1]) >= 4.5,
+    "Light primary action text does not meet 4.5:1 contrast",
+  );
+  assert.ok(
     contrastRatio(colors.danger[1], colors["dark-content"]) >= 4.5,
     "Original destructive button text does not meet 4.5:1 contrast",
+  );
+});
+
+test("[AC-LIGHTTHEME-F1] light achievement banners use a readable pastel blue while controls stay blue", async () => {
+  const [modernSource, latinHonorsSource] = await Promise.all([
+    readFile(new URL("../src/components/ModernCalculator.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/LatinHonorsCalculator.tsx", import.meta.url), "utf8"),
+  ]);
+  const styles = await readFile(new URL("../src/App.css", import.meta.url), "utf8");
+  const pastelBlue = "#D9E6FF";
+  const darkText = "#182230";
+
+  assert.ok(contrastRatio(darkText, pastelBlue) >= 4.5);
+  assert.match(styles, /\.light-award[\s\S]*?background-color:\s*#D9E6FF/);
+  assert.match(styles, /\.light-award[\s\S]*?color:\s*#182230/);
+  assert.ok(modernSource.includes("light-award"));
+  assert.ok(latinHonorsSource.includes("light-award"));
+  assert.ok(modernSource.includes("bg-light-accent-1 text-light-accent-text"));
+  assert.ok(latinHonorsSource.includes("bg-light-accent-1 text-light-accent-text"));
+});
+
+test("[AC-LATINHONORS-UI1] computation selector uses readable dark-mode text tokens", async () => {
+  const source = await readFile(
+    new URL("../src/components/ComputationModeSwitch.tsx", import.meta.url),
+    "utf8",
+  );
+  const result = await postcss([
+    tailwindcss({ config: "tailwind.config.js" }),
+  ]).process("@tailwind utilities;", { from: "src/index.css" });
+
+  assert.ok(
+    source.includes("text-dark-content/60") &&
+      result.css.includes(".text-dark-content\\/60 {"),
+    "Dark-mode inactive label must use a generated light text color",
   );
 });

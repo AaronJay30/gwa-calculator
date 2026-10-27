@@ -2,7 +2,7 @@ import React from "react";
 import "../App.css";
 import { GWA } from "../model";
 import { FaRegTrashAlt } from "react-icons/fa";
-import { VALID_GRADES } from "../gwaCalculator.mjs";
+import { MAX_UNITS, VALID_GRADES } from "../gwaCalculator.mjs";
 
 interface Props {
 	course: GWA;
@@ -61,16 +61,13 @@ const Input: React.FC<Props> = ({
 				<option value="0" disabled>
 					Units
 				</option>
-				<option value="1">1</option>
-				<option value="2">2</option>
-				<option value="3">3</option>
-				<option value="4">4</option>
-				<option value="5">5</option>
-				<option value="6">6</option>
-				<option value="7">7</option>
-				<option value="8">8</option>
-				<option value="9">9</option>
-				<option value="10">10</option>
+				{Array.from({ length: MAX_UNITS }, (_, index) => index + 1).map(
+					(unit) => (
+						<option key={unit} value={unit}>
+							{unit}
+						</option>
+					),
+				)}
 			</select>
 
 			{showDelete && (

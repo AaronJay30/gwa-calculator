@@ -16,8 +16,8 @@ const COLORS = {
     panel: "#FFFFFF",
     content: "#182230",
     muted: "#596678",
-    accent: "#4F73C4",
-    accentText: "#FFFFFF",
+    accent: "#D9E6FF",
+    accentText: "#182230",
     divider: "#D8DEE8",
   },
 };
@@ -63,6 +63,43 @@ export const createShareResultSvg = (summary, isDark) => {
   <rect x="96" y="142" width="1008" height="118" rx="18" fill="${colors.accent}" />
   <text x="126" y="183" fill="${colors.accentText}" font-family="Outfit, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="1">ACADEMIC ACHIEVEMENT</text>
   <text x="126" y="238" fill="${colors.accentText}" font-family="Outfit, Arial, sans-serif" font-size="48" font-weight="700">${standing}</text>
+  <text x="96" y="388" fill="${colors.content}" font-family="Outfit, Arial, sans-serif" font-size="132" font-weight="700" letter-spacing="-4">${gwa}</text>
+  <text x="102" y="430" fill="${colors.muted}" font-family="Outfit, Arial, sans-serif" font-size="18" letter-spacing="1.1">GENERAL WEIGHTED AVERAGE</text>
+  <line x1="96" y1="466" x2="1104" y2="466" stroke="${colors.divider}" stroke-width="2" />
+  <text x="100" y="510" fill="${colors.muted}" font-family="Outfit, Arial, sans-serif" font-size="18">Total courses</text>
+  <text x="100" y="556" fill="${colors.content}" font-family="Outfit, Arial, sans-serif" font-size="34" font-weight="700">${courseCount}</text>
+  <line x1="420" y1="492" x2="420" y2="562" stroke="${colors.divider}" stroke-width="2" />
+  <text x="458" y="510" fill="${colors.muted}" font-family="Outfit, Arial, sans-serif" font-size="18">Total units</text>
+  <text x="458" y="556" fill="${colors.content}" font-family="Outfit, Arial, sans-serif" font-size="34" font-weight="700">${totalUnits}</text>
+  <line x1="770" y1="492" x2="770" y2="562" stroke="${colors.divider}" stroke-width="2" />
+  <text x="808" y="510" fill="${colors.muted}" font-family="Outfit, Arial, sans-serif" font-size="18">Total points</text>
+  <text x="808" y="556" fill="${colors.content}" font-family="Outfit, Arial, sans-serif" font-size="34" font-weight="700">${totalPoints}</text>
+</svg>`;
+};
+
+export const getLatinHonorCardFilename = (latinHonor, gwa) =>
+  getResultCardFilename(latinHonor, gwa);
+
+export const createLatinHonorResultSvg = (summary, isDark) => {
+  if (!summary.latinHonor || summary.totalUnits <= 0) {
+    throw new Error("A qualifying Latin Honor is required to create a result card.");
+  }
+
+  const colors = COLORS[isDark ? "dark" : "light"];
+  const honor = escapeXml(summary.latinHonor);
+  const gwa = Number(summary.gwa).toFixed(4);
+  const courseCount = escapeXml(summary.courseCount.toLocaleString());
+  const totalUnits = escapeXml(summary.totalUnits.toLocaleString());
+  const totalPoints = Number(summary.totalPoints).toFixed(2);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
+  <rect width="${WIDTH}" height="${HEIGHT}" fill="${colors.background}" />
+  <circle cx="1080" cy="70" r="170" fill="${colors.accent}" opacity="0.08" />
+  <rect x="48" y="36" width="1104" height="558" rx="30" fill="${colors.panel}" />
+  <text x="96" y="104" fill="${colors.content}" font-family="Outfit, Arial, sans-serif" font-size="28" font-weight="700">GWA Calculator</text>
+  <rect x="96" y="142" width="1008" height="118" rx="18" fill="${colors.accent}" />
+  <text x="126" y="183" fill="${colors.accentText}" font-family="Outfit, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="1">LATIN HONOR ACHIEVEMENT</text>
+  <text x="126" y="238" fill="${colors.accentText}" font-family="Outfit, Arial, sans-serif" font-size="48" font-weight="700">${honor}</text>
   <text x="96" y="388" fill="${colors.content}" font-family="Outfit, Arial, sans-serif" font-size="132" font-weight="700" letter-spacing="-4">${gwa}</text>
   <text x="102" y="430" fill="${colors.muted}" font-family="Outfit, Arial, sans-serif" font-size="18" letter-spacing="1.1">GENERAL WEIGHTED AVERAGE</text>
   <line x1="96" y1="466" x2="1104" y2="466" stroke="${colors.divider}" stroke-width="2" />

@@ -1,4 +1,14 @@
+.light-award {
+  background-color: #D9E6FF;
+  color: #182230;
+}
+
 .scholarship-remark {
+  transform-origin: left center;
+  animation: scholarship-remark 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.latin-honor-remark {
   transform-origin: left center;
   animation: scholarship-remark 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -58,6 +68,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .scholarship-remark,
+  .latin-honor-remark,
   .achievement-confetti,
   .mode-hint-arrow {
     animation: none;

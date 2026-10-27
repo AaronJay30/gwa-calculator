@@ -4,7 +4,11 @@ import ThemeSwitch from "./components/ThemeSwitch";
 import CalculatorModeSwitch, {
 	CalculatorMode,
 } from "./components/CalculatorModeSwitch";
+import ComputationModeSwitch, {
+	ComputationMode,
+} from "./components/ComputationModeSwitch";
 import ModernCalculator from "./components/ModernCalculator";
+import LatinHonorsCalculator from "./components/LatinHonorsCalculator";
 import Input from "./components/Input";
 import FloatingChatButton from "./components/FloatingChatButton";
 import SupportModal from "./components/SupportModal";
@@ -24,6 +28,7 @@ const KONAMI_CODE = [
 function App() {
 	const [isDark, setIsDark] = useState(true);
 	const [mode, setMode] = useState<CalculatorMode>("original");
+	const [computationMode, setComputationMode] = useState<ComputationMode>("scholarship");
 	const [showModeHint, setShowModeHint] = useState(true);
 	const [showAdmin, setShowAdmin] = useState(false);
 	const [showSupport, setShowSupport] = useState(false);
@@ -158,8 +163,15 @@ function App() {
 						<ThemeSwitch setIsDark={setIsDark} isDark={isDark} />
 					</div>
 				</div>
+				{mode === "modern" && (
+					<ComputationModeSwitch
+						mode={computationMode}
+						onChange={setComputationMode}
+						isDark={isDark}
+					/>
+				)}
 
-				<div className={mode === "modern" ? "" : "hidden"}>
+				<div className={computationMode === "scholarship" && mode === "modern" ? "" : "hidden"}>
 					<ModernCalculator
 						courses={inputList}
 						summary={summary}
@@ -218,6 +230,10 @@ function App() {
 							Add
 						</button>
 					</div>
+				</div>
+
+				<div className={mode === "modern" && computationMode === "latin-honors" ? "" : "hidden"}>
+					<LatinHonorsCalculator isDark={isDark} />
 				</div>
 			</div>
 

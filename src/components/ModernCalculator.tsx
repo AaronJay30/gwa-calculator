@@ -3,6 +3,7 @@ import { FaDownload, FaPlus, FaRegTrashAlt, FaShareAlt } from "react-icons/fa";
 import { GWA } from "../model";
 import {
   CalculatorSummary,
+  MAX_UNITS,
   VALID_GRADES,
   hasCoursesToClear,
   stepGrade,
@@ -156,7 +157,10 @@ const ModernCalculator: React.FC<Props> = ({
                 </button>
               </div>
             </header>
-            <div className="mt-5 w-full rounded-lg bg-dark-accent-1 px-4 py-3 text-dark-primary">
+            <div
+              className={`mt-5 w-full rounded-lg px-4 py-3 ${
+                isDark ? "bg-dark-accent-1 text-dark-primary" : "light-award"
+              }`}>
                 <p className="text-[10px] font-semibold tracking-[0.12em]">
                   ACADEMIC ACHIEVEMENT
                 </p>
@@ -311,7 +315,7 @@ const ModernCalculator: React.FC<Props> = ({
               <StepButton
                 label="Increase units"
                 onClick={() => setUnits(stepUnit(units, 1))}
-                disabled={units >= 10}
+                disabled={units >= MAX_UNITS}
                 isDark={isDark}>
                 +
               </StepButton>

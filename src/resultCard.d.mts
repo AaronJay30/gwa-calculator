@@ -1,4 +1,5 @@
 import type { CalculatorSummary } from "./gwaCalculator.mjs";
+import type { LatinHonorsSummary } from "./latinHonors.mjs";
 
 export type ShareResultStatus = "shared" | "copied" | "unsupported";
 
@@ -9,6 +10,13 @@ export function getResultCardFilename(
 
 export function createShareResultSvg(
   summary: CalculatorSummary,
+  isDark: boolean,
+): string;
+
+export function getLatinHonorCardFilename(latinHonor: string, gwa: number): string;
+
+export function createLatinHonorResultSvg(
+  summary: LatinHonorsSummary,
   isDark: boolean,
 ): string;
 

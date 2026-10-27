@@ -1,115 +1,63 @@
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { checkAdminPassword } from "../firebase/adminAuth";
-import {
-  fetchGlobalStats,
-  fetchDailyStats,
-  VisitorStats,
-  DailyStat,
-} from "../firebase/visitorService";
-import VisitorAnalyticsChart from "./VisitorAnalyticsChart";
-import {
-  fillDailyStats,
-  getPeakDays,
-  getPresetDateRange,
-  DateRangePreset,
-} from "../visitorAnalytics.mjs";
+import { fetchGlobalStats, formatTimestamp } from "../firebase/visitorService";
+import type { VisitorStats } from "../firebase/visitorService";
+import { isValidGoogleAnalyticsMeasurementId } from "../googleAnalytics";
 
 interface Props {
   onClose: () => void;
   isDark: boolean;
 }
 
+const GA4_DASHBOARD_URL = "https://analytics.google.com/analytics/web/";
+
 const AdminPage: React.FC<Props> = ({ onClose, isDark }) => {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(false);
+  const [legacyStats, setLegacyStats] = useState<VisitorStats | null>(null);
+  const [loadingLegacyStats, setLoadingLegacyStats] = useState(false);
+  const [legacyStatsError, setLegacyStatsError] = useState("");
+  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim();
+  const hasGoogleAnalytics = isValidGoogleAnalyticsMeasurementId(measurementId);
 
-  const [stats, setStats] = useState<VisitorStats | null>(null);
-  const [daily, setDaily] = useState<DailyStat[]>([]);
-  const [loadingStats, setLoadingStats] = useState(false);
-  const [statsError, setStatsError] = useState("");
-  const [rangeDefaults] = useState(() => getPresetDateRange("month"));
-  const [rangeMode, setRangeMode] = useState<DateRangePreset | "custom">(
-    "month",
-  );
-  const [dateRange, setDateRange] = useState(rangeDefaults);
-  const [customStartDate, setCustomStartDate] = useState(rangeDefaults.startDate);
-  const [customEndDate, setCustomEndDate] = useState(rangeDefaults.endDate);
-  const [rangeError, setRangeError] = useState("");
-  const [loadingDaily, setLoadingDaily] = useState(false);
-  const [dailyError, setDailyError] = useState("");
-
-  // Lifetime totals do not change with the selected chart range.
   useEffect(() => {
     if (!authed) return;
     let cancelled = false;
-    const load = async () => {
-      setLoadingStats(true);
-      setStatsError("");
-      try {
-        const globalStats = await fetchGlobalStats();
-        if (!cancelled) setStats(globalStats);
-      } catch (err) {
+    setLoadingLegacyStats(true);
+    setLegacyStatsError("");
+    fetchGlobalStats()
+      .then((stats) => {
+        if (!cancelled) setLegacyStats(stats);
+      })
+      .catch((loadError: unknown) => {
         if (!cancelled) {
-          setStatsError(
-            err instanceof Error ? err.message : "Failed to load lifetime stats",
+          setLegacyStatsError(
+            loadError instanceof Error
+              ? loadError.message
+              : "Could not load the saved Firestore totals.",
           );
         }
-      } finally {
-        if (!cancelled) setLoadingStats(false);
-      }
-    };
-    load();
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingLegacyStats(false);
+      });
     return () => {
       cancelled = true;
     };
   }, [authed]);
 
-  // Fetch only the selected date range and ignore stale responses.
   useEffect(() => {
-    if (!authed) return;
-    let cancelled = false;
-    const load = async () => {
-      setLoadingDaily(true);
-      setDailyError("");
-      try {
-        const records = await fetchDailyStats(
-          dateRange.startDate,
-          dateRange.endDate,
-        );
-        if (!cancelled) {
-          setDaily(
-            fillDailyStats(dateRange.startDate, dateRange.endDate, records),
-          );
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setDailyError(
-            err instanceof Error ? err.message : "Failed to load daily analytics",
-          );
-        }
-      } finally {
-        if (!cancelled) setLoadingDaily(false);
-      }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [authed, dateRange.startDate, dateRange.endDate]);
-
-  // Close on Escape
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  const handleAuth = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleAuth = async (event: FormEvent) => {
+    event.preventDefault();
     if (checking || !password) return;
     setChecking(true);
     setError("");
@@ -121,248 +69,120 @@ const AdminPage: React.FC<Props> = ({ onClose, isDark }) => {
         setAuthed(true);
         setPassword("");
       }
+    } catch {
+      setError("Could not verify the password. Please try again.");
     } finally {
       setChecking(false);
     }
-  };
-
-  const handlePresetChange = (preset: DateRangePreset) => {
-    setRangeMode(preset);
-    setDateRange(getPresetDateRange(preset));
-    setRangeError("");
-  };
-
-  const handleCustomSelect = () => {
-    setRangeMode("custom");
-    setCustomStartDate(dateRange.startDate);
-    setCustomEndDate(dateRange.endDate);
-    setRangeError("");
-  };
-
-  const handleCustomApply = () => {
-    if (!customStartDate || !customEndDate) {
-      setRangeError("Choose both a start date and an end date.");
-      return;
-    }
-    if (customStartDate > customEndDate) {
-      setRangeError("The start date must be on or before the end date.");
-      return;
-    }
-    if (customEndDate > rangeDefaults.endDate) {
-      setRangeError("The end date cannot be in the future.");
-      return;
-    }
-
-    setDateRange({
-      startDate: customStartDate,
-      endDate: customEndDate,
-    });
-    setRangeError("");
   };
 
   const cardBg = isDark ? "bg-dark-primary" : "bg-light-primary";
   const textColor = isDark ? "text-dark-content" : "text-light-content";
   const inputBg = isDark ? "bg-dark-secondary" : "bg-light-secondary";
   const borderColor = isDark ? "border-dark-content/10" : "border-light-content/10";
-  const filterButtonClass = (selected: boolean) =>
-    `rounded-lg border px-3 py-2 text-sm font-medium transition ${
-      selected
-        ? isDark
-          ? "border-dark-accent-1 bg-dark-accent-1 text-dark-primary"
-          : "border-light-accent-1 bg-light-accent-1 text-light-accent-text"
-        : `${borderColor} hover:bg-current/5`
-    }`;
-  const peakDays = getPeakDays(daily);
-  const peakVisits = peakDays[0]?.visits ?? 0;
+  const actionButton = isDark
+    ? "bg-dark-accent-1 text-dark-primary"
+    : "bg-light-accent-1 text-light-accent-text";
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
       role="dialog"
       aria-modal="true"
       aria-label="Admin dashboard">
-      <div
-        className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6 ${cardBg} ${textColor}`}>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+      <div className={"max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl p-6 shadow-2xl " + cardBg + " " + textColor}>
+        <div className="mb-6 flex items-center justify-between">
           <h1 className="text-xl font-bold">📊 Visitor Analytics</h1>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close admin"
-            className={`w-9 h-9 rounded-full flex items-center justify-center text-xl hover:opacity-70 ${inputBg}`}>
+            className={"flex h-9 w-9 items-center justify-center rounded-full text-xl hover:opacity-70 " + inputBg}>
             ×
           </button>
         </div>
 
-        {/* Password gate */}
         {!authed && (
           <form onSubmit={handleAuth} className="flex flex-col gap-3">
-            <p className="text-sm opacity-70">
-              Enter the admin password to view analytics.
-            </p>
+            <p className="text-sm opacity-70">Enter the admin password to view analytics.</p>
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
               placeholder="Password"
-              className={`rounded-lg px-3 py-2 outline-none ${inputBg}`}
+              aria-label="Admin password"
+              className={"rounded-lg px-3 py-2 outline-none " + inputBg}
               autoFocus
             />
-            {error && <span className="text-red-400 text-sm">{error}</span>}
+            {error && <span className="text-sm text-red-400" role="alert">{error}</span>}
             <button
               type="submit"
               disabled={!password || checking}
-              className={`rounded-lg py-2 px-3 font-semibold disabled:opacity-40 ${
-                isDark
-                  ? "bg-dark-accent-1 text-white"
-                  : "bg-light-accent-1 text-light-accent-text"
-              }`}>
+              className={"rounded-lg px-3 py-2 font-semibold disabled:opacity-40 " + actionButton}>
               {checking ? "Checking…" : "Unlock"}
             </button>
           </form>
         )}
 
-        {/* Stats dashboard */}
         {authed && (
-          <div className="flex flex-col gap-6">
-            {statsError && (
-              <div className="text-red-400 text-sm text-center">
-                {statsError}
-              </div>
-            )}
-
-            {loadingStats && (
-              <div className="opacity-60 text-sm text-center py-8">
-                Loading…
-              </div>
-            )}
-
-            {/* Summary cards */}
-            {!loadingStats && stats && (
-              <div className="grid grid-cols-2 gap-3">
-                <div className={`rounded-xl p-4 ${inputBg}`}>
-                  <div className="text-3xl font-bold">
-                    {stats.totalVisits.toLocaleString()}
-                  </div>
-                  <div className="text-xs opacity-60 mt-1">All-time Visits</div>
+          <div className="flex flex-col gap-5">
+            <section className={"rounded-xl border p-4 " + borderColor + " " + inputBg} aria-labelledby="ga4-heading">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 id="ga4-heading" className="font-semibold">Google Analytics 4</h2>
+                  <p className="mt-1 text-sm opacity-70">
+                    View page views, active users, engagement, traffic sources, and device reports in GA4.
+                  </p>
                 </div>
-                <div className={`rounded-xl p-4 ${inputBg}`}>
-                  <div className="text-3xl font-bold">
-                    {stats.uniqueVisitors.toLocaleString()}
-                  </div>
-                  <div className="text-xs opacity-60 mt-1">
-                    All-time Unique Visitors
-                  </div>
-                </div>
+                <a
+                  href={GA4_DASHBOARD_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={"shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition-opacity hover:opacity-80 " + actionButton}>
+                  Open GA4 ↗
+                </a>
               </div>
-            )}
+              <p className={"mt-4 rounded-lg border p-3 text-sm " + borderColor} role="status">
+                {hasGoogleAnalytics
+                  ? "A GA4 Measurement ID is configured. New reports begin from the deployment that includes it."
+                  : "GA4 is not connected yet. Add a Measurement ID in your deployment settings, then rebuild and redeploy the site."}
+              </p>
+            </section>
 
-            <section className="flex flex-col gap-4" aria-label="Daily visitor analytics">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-sm font-semibold">Daily traffic</h2>
-                <div className="flex flex-wrap gap-2" role="group" aria-label="Date range">
-                  <button
-                    type="button"
-                    aria-pressed={rangeMode === "week"}
-                    onClick={() => handlePresetChange("week")}
-                    className={filterButtonClass(rangeMode === "week")}>
-                    Last week
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={rangeMode === "month"}
-                    onClick={() => handlePresetChange("month")}
-                    className={filterButtonClass(rangeMode === "month")}>
-                    Last 30 days
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={rangeMode === "custom"}
-                    onClick={handleCustomSelect}
-                    className={filterButtonClass(rangeMode === "custom")}>
-                    Custom
-                  </button>
+            <section className={"rounded-xl border p-4 " + borderColor} aria-labelledby="legacy-heading">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <h2 id="legacy-heading" className="font-semibold">Legacy Firestore totals</h2>
+                  <p className="mt-1 text-sm opacity-70">
+                    Saved visitor counts from before GA4. New page visits no longer update these totals.
+                  </p>
                 </div>
-              </div>
-
-              {rangeMode === "custom" && (
-                <div className={`flex flex-wrap items-end gap-3 rounded-xl p-3 ${inputBg}`}>
-                  <label className="flex flex-col gap-1 text-xs opacity-80">
-                    <span>Start date</span>
-                    <input
-                      type="date"
-                      aria-label="Start date"
-                      max={rangeDefaults.endDate}
-                      value={customStartDate}
-                      onChange={(event) => {
-                        setCustomStartDate(event.target.value);
-                        setRangeError("");
-                      }}
-                      className={`rounded-lg px-2 py-2 text-sm outline-none ${inputBg}`}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1 text-xs opacity-80">
-                    <span>End date</span>
-                    <input
-                      type="date"
-                      aria-label="End date"
-                      max={rangeDefaults.endDate}
-                      value={customEndDate}
-                      onChange={(event) => {
-                        setCustomEndDate(event.target.value);
-                        setRangeError("");
-                      }}
-                      className={`rounded-lg px-2 py-2 text-sm outline-none ${inputBg}`}
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleCustomApply}
-                    className={`rounded-lg px-3 py-2 text-sm font-semibold ${
-                      isDark
-                        ? "bg-dark-accent-1 text-dark-primary"
-                        : "bg-light-accent-1 text-light-accent-text"
-                    }`}>
-                    Apply range
-                  </button>
-                </div>
-              )}
-
-              {rangeError && (
-                <p className="text-sm text-red-400" role="alert">
-                  {rangeError}
-                </p>
-              )}
-              {dailyError && (
-                <p className="text-sm text-red-400" role="alert">
-                  {dailyError}
-                </p>
-              )}
-
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                {!loadingDaily && !dailyError && (
-                  <p className="text-sm font-semibold" aria-live="polite">
-                    {peakVisits > 0
-                      ? `Peak traffic: ${peakDays.map((day) => day.date).join(", ")} · ${peakVisits.toLocaleString()} visits`
-                      : "No visits recorded in this range."}
+                {legacyStats?.updatedAt && (
+                  <p className="text-xs opacity-60">
+                    Last recorded: {formatTimestamp(legacyStats.updatedAt)}
                   </p>
                 )}
-                <p className="text-xs opacity-60" aria-live="polite">
-                  {dateRange.startDate} – {dateRange.endDate}
-                </p>
               </div>
 
-              {loadingDaily ? (
-                <p className="py-12 text-center text-sm opacity-60" role="status">
-                  Loading daily analytics…
-                </p>
-              ) : dailyError ? null : (
-                <VisitorAnalyticsChart
-                  data={daily}
-                  peakDates={peakDays.map((day) => day.date)}
-                  isDark={isDark}
-                />
+              {loadingLegacyStats ? (
+                <p className="py-6 text-center text-sm opacity-60" role="status">Loading saved totals…</p>
+              ) : legacyStatsError ? (
+                <p className="mt-4 text-sm text-red-400" role="alert">{legacyStatsError}</p>
+              ) : (
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className={"rounded-lg p-3 " + inputBg}>
+                    <div className="text-2xl font-bold">
+                      {(legacyStats?.totalVisits ?? 0).toLocaleString()}
+                    </div>
+                    <div className="mt-1 text-xs opacity-60">Total visits before GA4</div>
+                  </div>
+                  <div className={"rounded-lg p-3 " + inputBg}>
+                    <div className="text-2xl font-bold">
+                      {(legacyStats?.uniqueVisitors ?? 0).toLocaleString()}
+                    </div>
+                    <div className="mt-1 text-xs opacity-60">Unique visitors before GA4</div>
+                  </div>
+                </div>
               )}
             </section>
           </div>

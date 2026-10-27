@@ -46,6 +46,8 @@ interface Props {
   onPeriodChange: React.Dispatch<React.SetStateAction<{ year: number; term: LatinTerm }>>;
 }
 
+type EditableCourseField = "name" | "grades" | "units";
+
 const LatinHonorsCalculator: React.FC<Props> = ({
   isDark,
   courses,
@@ -62,6 +64,11 @@ const LatinHonorsCalculator: React.FC<Props> = ({
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [downloadingCard, setDownloadingCard] = useState(false);
   const [downloadError, setDownloadError] = useState("");
+  const [editingCourse, setEditingCourse] = useState<{
+    id: number;
+    field: EditableCourseField;
+  } | null>(null);
+  const [editingValue, setEditingValue] = useState("");
   const closeSummary = useCallback(() => setShowSummary(false), []);
 
   const termCourses = getCoursesForPeriod(courses, year, term);
@@ -132,6 +139,45 @@ const LatinHonorsCalculator: React.FC<Props> = ({
     onCoursesChange((previous) =>
       previous.filter((course) => course.year !== year || course.term !== term),
     );
+  };
+
+  const handleClearAllCourses = () => {
+    if (!window.confirm("Clear all Latin Honor grades from every year and semester? This cannot be undone.")) {
+      return;
+    }
+    onCoursesChange([]);
+  };
+
+  const updateCourse = (
+    id: number,
+    changes: Partial<Pick<LatinHonorsCourse, "name" | "grades" | "units">>,
+  ) => {
+    onCoursesChange((previous) =>
+      previous.map((course) => (course.id === id ? { ...course, ...changes } : course)),
+    );
+  };
+
+  const startCourseEdit = (
+    course: LatinHonorsCourse,
+    field: EditableCourseField,
+  ) => {
+    setEditingCourse({ id: course.id, field });
+    setEditingValue(field === "name" ? course.name ?? "" : String(course.units));
+  };
+
+  const commitCourseEdit = () => {
+    if (!editingCourse) return;
+
+    if (editingCourse.field === "name") {
+      updateCourse(editingCourse.id, { name: editingValue.trim() || undefined });
+    } else if (editingCourse.field === "units") {
+      const nextUnits = Number(editingValue);
+      if (Number.isInteger(nextUnits) && nextUnits >= 1 && nextUnits <= MAX_UNITS) {
+        updateCourse(editingCourse.id, { units: nextUnits });
+      }
+    }
+
+    setEditingCourse(null);
   };
 
   const setTermByOffset = (offset: -1 | 1) => {
@@ -375,17 +421,31 @@ const LatinHonorsCalculator: React.FC<Props> = ({
           <h2 className="text-lg font-semibold">
             Courses · {YEARS[year - 1]} Year, {TERMS[termIndex].label}
           </h2>
-          <button
-            type="button"
-            onClick={handleClearPeriod}
-            disabled={termCourses.length === 0}
-            className={`rounded-lg px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
-              isDark
-                ? "bg-danger-1 text-dark-content hover:bg-danger-2"
-                : "bg-danger-3 text-light-content hover:bg-danger-1"
-            }`}>
-            Clear this term
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleClearPeriod}
+              disabled={termCourses.length === 0}
+              className={`rounded-lg px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                isDark
+                  ? "bg-danger-1 text-dark-content hover:bg-danger-2"
+                  : "bg-danger-3 text-light-content hover:bg-danger-1"
+              }`}>
+              Clear this term
+            </button>
+            <button
+              type="button"
+              onClick={handleClearAllCourses}
+              disabled={courses.length === 0}
+              title="Clear Latin Honor grades from every year and semester"
+              className={`rounded-lg px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                isDark
+                  ? "bg-danger-1 text-dark-content hover:bg-danger-2"
+                  : "bg-danger-3 text-light-content hover:bg-danger-1"
+              }`}>
+              Clear all grades
+            </button>
+          </div>
         </header>
         {termCourses.length === 0 ? (
           <p className={`py-8 text-center text-sm ${mutedText}`}>
@@ -400,16 +460,94 @@ const LatinHonorsCalculator: React.FC<Props> = ({
                 <li
                   key={course.id}
                   className={`flex flex-wrap items-center gap-x-5 gap-y-3 rounded-xl px-4 py-3 ${fieldStyle}`}>
-                  <span className="min-w-0 flex-1 break-words font-semibold">
-                    {name}
+                  <div className="min-w-0 flex-1 break-words font-semibold">
+                    {editingCourse?.id === course.id && editingCourse.field === "name" ? (
+                      <input
+                        type="text"
+                        autoFocus
+                        value={editingValue}
+                        onChange={(event) => setEditingValue(event.target.value)}
+                        onBlur={commitCourseEdit}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") event.currentTarget.blur();
+                        }}
+                        aria-label={`Edit subject ${name}`}
+                        placeholder="Subject name"
+                        className={`w-full min-w-0 rounded-md px-2 py-1 outline-none ring-1 ring-inset ${fieldStyle} ${focusRing}`}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => startCourseEdit(course, "name")}
+                        title="Click to edit subject"
+                        aria-label={`Edit subject ${name}`}
+                        className={`max-w-full rounded px-1 text-left hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 ${focusRing}`}>
+                        {name}
+                      </button>
+                    )}
                     {!course.includeInLatinHonors && (
-                      <span className={`ml-2 text-xs font-normal ${mutedText}`}>
+                      <span className={`ml-2 inline-block text-xs font-normal ${mutedText}`}>
                         Excluded from GWA
                       </span>
                     )}
-                  </span>
-                  <CourseValue label="Grade" value={course.grades.toFixed(2)} />
-                  <CourseValue label="Units" value={String(course.units)} />
+                  </div>
+                  <EditableCourseValue label="Grade">
+                    {editingCourse?.id === course.id && editingCourse.field === "grades" ? (
+                      <select
+                        autoFocus
+                        value={course.grades}
+                        onChange={(event) => {
+                          updateCourse(course.id, { grades: Number(event.target.value) });
+                          setEditingCourse(null);
+                        }}
+                        onBlur={() => setEditingCourse(null)}
+                        aria-label={`Edit grade for ${name}`}
+                        className={`rounded-md px-1 py-0.5 text-right outline-none ring-1 ring-inset ${fieldStyle} ${focusRing}`}>
+                        {VALID_GRADES.map((validGrade) => (
+                          <option key={validGrade} value={validGrade}>
+                            {validGrade.toFixed(2)}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => startCourseEdit(course, "grades")}
+                        title="Click to edit grade"
+                        aria-label={`Edit grade for ${name}`}
+                        className={`rounded px-1 text-sm font-medium hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 ${focusRing}`}>
+                        {course.grades.toFixed(2)}
+                      </button>
+                    )}
+                  </EditableCourseValue>
+                  <EditableCourseValue label="Units">
+                    {editingCourse?.id === course.id && editingCourse.field === "units" ? (
+                      <input
+                        type="number"
+                        autoFocus
+                        min={1}
+                        max={MAX_UNITS}
+                        step={1}
+                        value={editingValue}
+                        onChange={(event) => setEditingValue(event.target.value)}
+                        onBlur={commitCourseEdit}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") event.currentTarget.blur();
+                        }}
+                        aria-label={`Edit units for ${name}`}
+                        className={`w-16 rounded-md px-1 py-0.5 text-right outline-none ring-1 ring-inset ${fieldStyle} ${focusRing}`}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => startCourseEdit(course, "units")}
+                        title="Click to edit units"
+                        aria-label={`Edit units for ${name}`}
+                        className={`rounded px-1 text-sm font-medium hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 ${focusRing}`}>
+                        {course.units}
+                      </button>
+                    )}
+                  </EditableCourseValue>
                   <CourseValue label="Points" value={points.toFixed(2)} />
                   <button
                     type="button"
@@ -554,6 +692,18 @@ interface CourseValueProps {
   label: string;
   value: string;
 }
+
+interface EditableCourseValueProps {
+  label: string;
+  children: React.ReactNode;
+}
+
+const EditableCourseValue: React.FC<EditableCourseValueProps> = ({ label, children }) => (
+  <div className="text-right">
+    <p className="text-xs opacity-60">{label}</p>
+    <div className="text-sm font-medium">{children}</div>
+  </div>
+);
 
 const CourseValue: React.FC<CourseValueProps> = ({ label, value }) => (
   <div className="text-right">

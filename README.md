@@ -58,14 +58,27 @@ completed courses into a selected year and semester. The scholarship entries
 stay in place; transferring the same courses to the same period again updates
 their copies instead of duplicating them.
 
-## Admin visitor analytics
+## Visitor analytics
 
-The admin analytics panel shows all-time visit totals and a daily line chart
-for visits and unique visitors. Filter the chart to the last week, the last 30
-days, or an inclusive custom date range. The busiest date is called out above
-the chart; missing daily records appear as zero. Unique visitor values in the
-chart are per-day counts, so the same person may be counted on more than one
-day in a selected range.
+New website traffic is measured by Google Analytics 4 (GA4), so normal page
+visits no longer write to Firestore. To connect it, create a GA4 property and
+web data stream, copy its `G-...` Measurement ID, and add it as
+`VITE_GA_MEASUREMENT_ID` to the environment used for the production build. The
+GA4 tag runs only in production. Reports are available from the authenticated
+admin panel's **Open GA4** button or at [Google Analytics](https://analytics.google.com/analytics/web/).
+
+GA4 provides page views, active and new users, engagement, traffic sources,
+and device reports. Demographic details depend on Google Signals, user consent,
+and minimum-data privacy thresholds, so they may not appear for every visitor
+or date range.
+
+The admin panel keeps the old Firestore visit and unique-visitor counts as a
+read-only historical baseline with its last recorded time. Those counts are
+not added to GA4; GA4 starts collecting new data after it is configured and
+deployed. The old `siteStats` and `dailyStats` data stay in Firestore unless
+deleted manually. The `visits` marker collection can be deleted separately
+without deleting the aggregate totals. Firebase continues to store chat
+messages.
 
 ## Development
 

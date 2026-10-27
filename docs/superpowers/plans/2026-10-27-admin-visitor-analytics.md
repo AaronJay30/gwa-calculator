@@ -1,5 +1,8 @@
 # Admin Visitor Analytics Implementation Plan
 
+> Superseded on 2026-10-27 by `2026-10-27-ga4-visitor-analytics.md`.
+> This plan describes the earlier Firestore chart implementation.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add date filters and a responsive two-series line chart to help the admin identify the busiest days and compare daily visits with unique visitors.

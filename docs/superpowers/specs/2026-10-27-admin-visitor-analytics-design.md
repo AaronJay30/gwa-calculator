@@ -1,5 +1,8 @@
 # Admin Visitor Analytics Design
 
+> Superseded on 2026-10-27 by `2026-10-27-ga4-visitor-analytics-design.md`.
+> This document describes the earlier Firestore chart implementation.
+
 ## Intent
 
 Help the admin identify traffic peaks by showing daily visits and unique

@@ -23,7 +23,7 @@ import {
 } from "./calculatorSave.mjs";
 import { getNextScholarshipCourseId, transferScholarshipCourses } from "./latinHonors.mjs";
 import type { LatinHonorsCourse, LatinTerm } from "./latinHonors.mjs";
-import { recordVisit } from "./firebase/visitorService";
+import { initializeGoogleAnalytics } from "./googleAnalytics";
 
 const AdminPage = lazy(() => import("./components/AdminPage"));
 const EMPTY_SCHOLARSHIP_COURSE: GWA = { id: 0, grades: 0, units: 0 };
@@ -180,11 +180,8 @@ function App() {
 		return result;
 	};
 
-	// Record a visit once on mount
 	useEffect(() => {
-		recordVisit().catch((err) => {
-			console.error("Failed to record visit:", err);
-		});
+		initializeGoogleAnalytics();
 	}, []);
 
 	// Konami code listener — opens admin page

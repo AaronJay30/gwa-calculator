@@ -42,13 +42,13 @@ const VisitorAnalyticsChart: React.FC<Props> = ({
         text: "#DAE2F1",
       }
     : {
-        grid: "#AEB6CD",
-        axis: "#46536D",
-        visits: "#0234CA",
+        grid: "#D8DEE8",
+        axis: "#596678",
+        visits: "#3158C8",
         unique: "#C39A32",
-        panel: "#CDD1E5",
-        tooltip: "#EDF0F8",
-        text: "#0E1625",
+        panel: "#FFFFFF",
+        tooltip: "#F4F6F9",
+        text: "#182230",
       };
   const peakVisits = data.reduce(
     (highest, point) => Math.max(highest, point.visits),

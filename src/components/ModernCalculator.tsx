@@ -49,14 +49,14 @@ const ModernCalculator: React.FC<Props> = ({
     : "bg-light-primary text-light-content";
   const fieldStyle = isDark
     ? "bg-dark-background text-dark-content placeholder:text-dark-content/45"
-    : "bg-light-background text-light-content placeholder:text-light-content/45";
+    : "bg-light-secondary text-light-content placeholder:text-light-content/45";
   const mutedText = isDark ? "text-dark-content/60" : "text-light-content/60";
   const secondaryButton = isDark
     ? "border border-dark-content/10 text-dark-content hover:bg-dark-content/5"
     : "border border-light-content/10 text-light-content hover:bg-light-content/5";
   const primaryButton = isDark
     ? "bg-dark-accent-1 text-light-content hover:bg-dark-accent-2"
-    : "bg-light-accent-1 text-dark-content hover:bg-light-accent-2";
+    : "bg-light-accent-1 text-white hover:bg-light-accent-2";
   const destructiveStyle =
     "bg-danger-1 text-dark-content hover:bg-danger-2 focus-visible:outline-danger-2";
   const focusRing = isDark
@@ -430,7 +430,7 @@ const StepButton: React.FC<StepButtonProps> = ({
     className={`h-10 w-10 shrink-0 rounded-xl font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dark-accent-1 ${
       isDark
         ? "bg-dark-background text-dark-content hover:bg-dark-primary"
-        : "bg-light-background text-light-content hover:bg-light-primary"
+        : "bg-light-secondary text-light-content hover:bg-light-background"
     }`}>
     {children}
   </button>

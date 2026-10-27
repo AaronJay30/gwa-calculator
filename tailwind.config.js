@@ -17,14 +17,14 @@ export default {
           2: '#A17D21',
         },
         
-        'light-content': '#0E1625',
-        'light-result': '#0E1625',
-        'light-background': '#D9E2FC',
-        'light-primary': '#CDD1E5',
-        'light-secondary': '#EDF0F8',
+        'light-content': '#182230',
+        'light-result': '#182230',
+        'light-background': '#F4F6F9',
+        'light-primary': '#FFFFFF',
+        'light-secondary': '#EEF1F5',
         'light-accent': {
-          1: '#0234CA',
-          2: '#012389',
+          1: '#3158C8',
+          2: '#294BAA',
         },
       
         'danger': {

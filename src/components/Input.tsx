@@ -35,7 +35,7 @@ const Input: React.FC<Props> = ({
 				className={`w-full py-3 px-4 rounded-lg duration-300 ${
 					isDark
 						? "bg-dark-background text-dark-content"
-						: "bg-light-background text-light-content"
+						: "bg-light-secondary text-light-content"
 				}`}
 				value={course.grades === 0 ? "0" : course.grades.toFixed(2)}
 				onChange={handleGradesChange}>
@@ -54,7 +54,7 @@ const Input: React.FC<Props> = ({
 				className={`py-3 px-4 sm:w-1/3 w-2/3 rounded-lg duration-300 ${
 					isDark
 						? "bg-dark-background text-dark-content"
-						: "bg-light-background text-light-content"
+						: "bg-light-secondary text-light-content"
 				}`}
 				value={course.units}
 				onChange={handleUnitsChange}>

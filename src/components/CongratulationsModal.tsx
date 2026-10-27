@@ -19,13 +19,13 @@ const CongratulationsModal: React.FC<Props> = ({
     : "bg-light-primary text-light-content";
   const accentStyle = isDark
     ? "bg-dark-accent-1 text-light-content"
-    : "bg-light-accent-1 text-dark-content";
+    : "bg-light-accent-1 text-white";
   const mutedStyle = isDark ? "text-dark-content/70" : "text-light-content/70";
   const confettiPieces = useMemo(
     () => {
       const colors = isDark
         ? ["#C39A32", "#DAE2F1", "#F1C75B", "#8298C8"]
-        : ["#0234CA", "#6689EA", "#C39A32", "#0E1625"];
+        : ["#3158C8", "#7D98E6", "#C39A32", "#182230"];
       return Array.from({ length: 36 }, (_, index) => ({
         left: `${Math.random() * 100}%`,
         duration: `${2.4 + Math.random() * 2.8}s`,

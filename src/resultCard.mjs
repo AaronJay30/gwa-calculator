@@ -12,13 +12,13 @@ const COLORS = {
     divider: "#39435C",
   },
   light: {
-    background: "#D9E2FC",
-    panel: "#CDD1E5",
-    content: "#0E1625",
-    muted: "#46536D",
-    accent: "#0234CA",
+    background: "#F4F6F9",
+    panel: "#FFFFFF",
+    content: "#182230",
+    muted: "#596678",
+    accent: "#3158C8",
     accentText: "#FFFFFF",
-    divider: "#AEB6CD",
+    divider: "#D8DEE8",
   },
 };
 

@@ -20,7 +20,7 @@ any time; both use the same courses and calculated standing.
 ## GWA and academic standing
 
 The calculator uses `sum(grade × units) / sum(units)` and displays the GWA to
-four decimal places. Academic standing is shown when the total exceeds 10 units:
+four decimal places. Academic standing is shown when the total reaches 9 units:
 
 - University Scholar: GWA 1.50 or lower
 - College Scholar: GWA 1.51–1.75

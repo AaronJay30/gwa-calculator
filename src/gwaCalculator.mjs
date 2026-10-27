@@ -4,7 +4,7 @@ export const VALID_GRADES = [
 export const MAX_UNITS = 99;
 
 export const getAcademicStanding = (gwa, totalUnits) => {
-  if (totalUnits <= 10) return "";
+  if (totalUnits < 9) return "";
   if (gwa < 1.51) return "University Scholar";
   if (gwa < 1.76) return "College Scholar";
   if (gwa <= 2) return "Dean's Lister";

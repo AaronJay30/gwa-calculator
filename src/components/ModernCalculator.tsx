@@ -260,7 +260,7 @@ const ModernCalculator: React.FC<Props> = ({
                 {summary.gwa.toFixed(4)}
               </p>
               <p className={`mt-3 text-sm ${mutedText}`}>
-                Academic standing appears after 10+ units.
+                Academic standing appears after 9+ units.
               </p>
             </div>
             <div

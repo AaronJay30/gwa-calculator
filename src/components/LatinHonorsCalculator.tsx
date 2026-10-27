@@ -255,9 +255,9 @@ const LatinHonorsCalculator: React.FC<Props> = ({
               </span>
             ) : (
               <p className="text-right text-sm font-semibold">
-                {termSummary.totalUnits > 10
+                {termSummary.totalUnits >= 9
                   ? "No scholarship range"
-                  : "Scholar standing appears after 10+ units"}
+                  : "Scholar standing appears after 9+ units"}
               </p>
             )}
           </div>

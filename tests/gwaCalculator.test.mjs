@@ -76,7 +76,8 @@ test("[AC-MODE1026-F4] Clear All detects shared rows with partial data", () => {
 test("[AC-MODE1026-F5] academic standing preserves GWA and unit thresholds", () => {
   const { getAcademicStanding } = getCalculator();
 
-  assert.equal(getAcademicStanding(1, 10), "");
+  assert.equal(getAcademicStanding(1, 8), "");
+  assert.equal(getAcademicStanding(1, 9), "University Scholar");
   assert.equal(getAcademicStanding(1.5, 11), "University Scholar");
   assert.equal(getAcademicStanding(1.5032, 11), "University Scholar");
   assert.equal(getAcademicStanding(1.50999999, 11), "University Scholar");

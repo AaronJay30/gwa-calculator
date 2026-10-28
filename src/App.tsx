@@ -135,6 +135,17 @@ function App() {
 		);
 	};
 
+	const handleScholarshipCourseUpdate = (
+		id: number,
+		changes: Partial<Pick<GWA, "name" | "grades" | "units">>,
+	) => {
+		setInputList((previous) =>
+			previous.map((course) =>
+				course.id === id ? { ...course, ...changes } : course,
+			),
+		);
+	};
+
 	const handleCourseDelete = (id: number) => {
 		setInputList((previous) => previous.filter((course) => course.id !== id));
 	};
@@ -273,6 +284,7 @@ function App() {
 						courses={inputList}
 						summary={summary}
 						isDark={isDark}
+						onUpdateCourse={handleScholarshipCourseUpdate}
 						onAddCourse={handleAddModernCourse}
 						onDeleteCourse={handleCourseDelete}
 						onClearAll={handleClearAll}

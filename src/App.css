@@ -17,6 +17,21 @@
   animation: mode-hint-nudge 800ms ease-in-out infinite;
 }
 
+.jose-peek {
+  position: fixed;
+  z-index: 60;
+  left: 0;
+  bottom: 0;
+  width: min(70vw, 420px);
+  max-height: min(72vh, 520px);
+  object-fit: contain;
+  object-position: bottom left;
+  pointer-events: none;
+  transition-property: transform, opacity;
+  transition-duration: 900ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 @keyframes mode-hint-nudge {
   0%,
   100% {
@@ -72,6 +87,10 @@
   .achievement-confetti,
   .mode-hint-arrow {
     animation: none;
+  }
+
+  .jose-peek {
+    transition: none;
   }
 
   .achievement-confetti {

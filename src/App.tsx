@@ -13,6 +13,7 @@ import SaveCopyControls from "./components/SaveCopyControls";
 import Input from "./components/Input";
 import FloatingChatButton from "./components/FloatingChatButton";
 import FloatingFaqButton from "./components/FloatingFaqButton";
+import ScheduledJosePeek from "./components/ScheduledJosePeek";
 import SupportModal from "./components/SupportModal";
 import { GWA } from "./model";
 import { calculateSummary } from "./gwaCalculator.mjs";
@@ -388,6 +389,7 @@ function App() {
 				</button>
 			</footer>
 
+			<ScheduledJosePeek />
 			<FloatingFaqButton isDark={isDark} />
 			<FloatingChatButton isDark={isDark} />
 			{showSupport && (
@@ -402,7 +404,10 @@ function App() {
 							</div>
 						</div>
 					}>
-					<AdminPage onClose={() => setShowAdmin(false)} isDark={isDark} />
+					<AdminPage
+						onClose={() => setShowAdmin(false)}
+						isDark={isDark}
+					/>
 				</Suspense>
 			)}
 		</div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FaArrowRight, FaDownload, FaPlus, FaRegTrashAlt, FaShareAlt } from "react-icons/fa";
 import { GWA } from "../model";
 import {
@@ -17,6 +17,7 @@ import {
   shareResult,
 } from "../resultCard.mjs";
 import CongratulationsModal from "./CongratulationsModal";
+import GradeGoalPlannerModal from "./GradeGoalPlannerModal";
 import type { LatinTerm, ScholarshipTransferResult } from "../latinHonors.mjs";
 
 interface Props {
@@ -49,6 +50,7 @@ const ModernCalculator: React.FC<Props> = ({
   const [grade, setGrade] = useState(1);
   const [units, setUnits] = useState(3);
   const [showCongratulations, setShowCongratulations] = useState(false);
+  const [showGradePlanner, setShowGradePlanner] = useState(false);
   const [shareMessage, setShareMessage] = useState("");
   const [showTransfer, setShowTransfer] = useState(false);
   const [editingCourse, setEditingCourse] = useState<{
@@ -60,6 +62,7 @@ const ModernCalculator: React.FC<Props> = ({
   const [transferTerm, setTransferTerm] = useState<LatinTerm>("first");
   const transferYearSelect = useRef<HTMLSelectElement>(null);
   const confirmTransfer = useRef<HTMLButtonElement>(null);
+  const closeGradePlanner = useCallback(() => setShowGradePlanner(false), []);
 
   const savedCourses = courses.filter((course) => course.units > 0);
   const transferableCourses = savedCourses.filter(
@@ -282,6 +285,16 @@ const ModernCalculator: React.FC<Props> = ({
                 {shareMessage}
               </p>
             )}
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              aria-label="Open Academic Scholarship grade planner"
+              onClick={() => setShowGradePlanner(true)}
+              className={`mt-4 inline-flex items-center text-sm font-semibold underline underline-offset-4 transition hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                isDark ? "focus-visible:outline-dark-accent-1" : "focus-visible:outline-light-content"
+              }`}>
+              What grades do I need?
+            </button>
           </div>
         ) : (
           <>
@@ -316,6 +329,16 @@ const ModernCalculator: React.FC<Props> = ({
                 isDark={isDark}
               />
             </div>
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              aria-label="Open Academic Scholarship grade planner"
+              onClick={() => setShowGradePlanner(true)}
+              className={`mt-4 inline-flex items-center text-sm font-semibold underline underline-offset-4 transition hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                isDark ? "focus-visible:outline-dark-accent-1" : "focus-visible:outline-light-content"
+              }`}>
+              What grades do I need?
+            </button>
           </>
         )}
       </section>
@@ -639,6 +662,14 @@ const ModernCalculator: React.FC<Props> = ({
             </div>
           </div>
         </div>
+      )}
+      {showGradePlanner && (
+        <GradeGoalPlannerModal
+          mode="academic"
+          isDark={isDark}
+          currentCourses={courses}
+          onClose={closeGradePlanner}
+        />
       )}
       {showCongratulations && (
         <CongratulationsModal

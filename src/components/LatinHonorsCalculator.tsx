@@ -18,6 +18,7 @@ import {
   getLatinHonorCardFilename,
 } from "../resultCard.mjs";
 import CongratulationsModal from "./CongratulationsModal";
+import GradeGoalPlannerModal from "./GradeGoalPlannerModal";
 import LatinHonorsSummaryModal from "./LatinHonorsSummaryModal";
 
 const YEARS = [
@@ -61,6 +62,7 @@ const LatinHonorsCalculator: React.FC<Props> = ({
   const [units, setUnits] = useState(3);
   const [includeInLatinHonors, setIncludeInLatinHonors] = useState(true);
   const [showSummary, setShowSummary] = useState(false);
+  const [showGradePlanner, setShowGradePlanner] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [downloadingCard, setDownloadingCard] = useState(false);
   const [downloadError, setDownloadError] = useState("");
@@ -70,6 +72,7 @@ const LatinHonorsCalculator: React.FC<Props> = ({
   } | null>(null);
   const [editingValue, setEditingValue] = useState("");
   const closeSummary = useCallback(() => setShowSummary(false), []);
+  const closeGradePlanner = useCallback(() => setShowGradePlanner(false), []);
 
   const termCourses = getCoursesForPeriod(courses, year, term);
   const countedTermCourses = termCourses.filter(
@@ -253,6 +256,14 @@ const LatinHonorsCalculator: React.FC<Props> = ({
           <Metric label="Total units" value={overallSummary.totalUnits.toLocaleString()} isDark={isDark} />
           <Metric label="Total points" value={overallSummary.totalPoints.toFixed(2)} isDark={isDark} />
         </div>
+        <button
+          type="button"
+          aria-haspopup="dialog"
+          aria-label="Open Latin Honor grade planner"
+          onClick={() => setShowGradePlanner(true)}
+          className={`mt-4 inline-flex items-center text-sm font-semibold underline underline-offset-4 transition hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${focusRing}`}>
+          What grades do I need?
+        </button>
       </section>
 
       <section className={`rounded-xl p-5 sm:p-6 ${panelStyle}`} aria-label="Academic period">
@@ -260,8 +271,8 @@ const LatinHonorsCalculator: React.FC<Props> = ({
           <PeriodNavigator
             label="Academic year"
             value={`${YEARS[year - 1]} Year`}
-            onPrevious={() => onPeriodChange((previous) => ({ ...previous, year: Math.max(1, previous.year - 1) }))}
-            onNext={() => onPeriodChange((previous) => ({ ...previous, year: Math.min(10, previous.year + 1) }))}
+            onPrevious={() => onPeriodChange((previous) => ({ year: Math.max(1, previous.year - 1), term: "first" }))}
+            onNext={() => onPeriodChange((previous) => ({ year: Math.min(10, previous.year + 1), term: "first" }))}
             previousDisabled={year === 1}
             nextDisabled={year === 10}
             isDark={isDark}
@@ -418,9 +429,16 @@ const LatinHonorsCalculator: React.FC<Props> = ({
           className={`flex flex-wrap items-center justify-between gap-3 border-b pb-4 ${
             isDark ? "border-dark-content/10" : "border-light-content/10"
           }`}>
-          <h2 className="text-lg font-semibold">
-            Courses · {YEARS[year - 1]} Year, {TERMS[termIndex].label}
-          </h2>
+          <div>
+            <h2 className="text-lg font-semibold">
+              Courses · {YEARS[year - 1]} Year, {TERMS[termIndex].label}
+            </h2>
+            {termCourses.length > 0 && (
+              <p className={`mt-1 text-xs ${mutedText}`}>
+                Click or tap a course name, grade, or unit to edit it.
+              </p>
+            )}
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
@@ -567,6 +585,14 @@ const LatinHonorsCalculator: React.FC<Props> = ({
           courses={courses}
           isDark={isDark}
           onClose={closeSummary}
+        />
+      )}
+      {showGradePlanner && (
+        <GradeGoalPlannerModal
+          mode="latin-honors"
+          isDark={isDark}
+          currentCourses={courses}
+          onClose={closeGradePlanner}
         />
       )}
       {showCongratulations && overallSummary.latinHonor && (

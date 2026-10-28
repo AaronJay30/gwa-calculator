@@ -12,6 +12,7 @@ import LatinHonorsCalculator from "./components/LatinHonorsCalculator";
 import SaveCopyControls from "./components/SaveCopyControls";
 import Input from "./components/Input";
 import FloatingChatButton from "./components/FloatingChatButton";
+import FloatingFaqButton from "./components/FloatingFaqButton";
 import SupportModal from "./components/SupportModal";
 import { GWA } from "./model";
 import { calculateSummary } from "./gwaCalculator.mjs";
@@ -206,11 +207,7 @@ function App() {
 
 	return (
 		<div
-			className={`${
-				mode === "modern"
-					? "flex min-h-screen flex-col items-center"
-					: "flex min-h-screen items-center justify-center"
-			} duration-300 ${
+			className={`flex min-h-screen flex-col items-center duration-300 ${
 				isDark
 					? "bg-dark-background"
 					: "bg-light-background"
@@ -357,7 +354,7 @@ function App() {
 				} ${
 					mode === "modern"
 						? "mx-auto w-full sm:w-1/2 md:w-3/4 lg:w-1/2 px-4 py-4 text-right"
-						: "fixed bottom-4 right-4"
+						: "mt-auto mx-auto w-full sm:w-1/2 md:w-3/4 lg:w-1/2 px-4 py-4 text-center"
 				}`}>
 				<span>
 					GCalc is created and maintained by{" "}
@@ -379,6 +376,7 @@ function App() {
 				</button>
 			</footer>
 
+			<FloatingFaqButton isDark={isDark} />
 			<FloatingChatButton isDark={isDark} />
 			{showSupport && (
 				<SupportModal isDark={isDark} onClose={closeSupport} />
